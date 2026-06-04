@@ -1,0 +1,8 @@
+# Normalize line endings to LF for every text file in the repo.
+* text=auto eol=lf
+
+*.md           text eol=lf
+*.yml          text eol=lf
+LICENSE        text eol=lf
+.gitignore     text eol=lf
+.gitattributes text eol=lf
