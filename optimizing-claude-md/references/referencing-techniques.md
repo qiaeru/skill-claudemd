@@ -5,7 +5,7 @@ The point of optimizing CLAUDE.md is to stop copying things that already live el
 ## What loads when
 
 | Mechanism | Loaded at session start? | Token cost at launch | Use for |
-| --------- | ------------------------ | -------------------- | ------- |
+| --- | --- | --- | --- |
 | Prose pointer | No | One line (the pointer) | Large or only-sometimes-relevant docs |
 | `@path` import | Yes, in full | The whole file | Small files needed every session |
 | Path-scoped rule | Only when a matching file is touched | Zero until then | Conventions tied to one file type or directory |

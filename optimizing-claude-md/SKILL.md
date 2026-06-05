@@ -51,15 +51,15 @@ The decision tree and concrete examples are in [references/referencing-technique
 
 ## Keep or cut, quick reference
 
-| ✅ Keep                                              | ❌ Cut or reference                                 |
-| --------------------------------------------------- | -------------------------------------------------- |
-| Bash commands Claude cannot guess                   | Anything Claude can learn by reading the code      |
-| Code style that differs from the language default   | Standard conventions Claude already knows          |
-| Test runner and how to run a single test            | Detailed API docs (point to the docs instead)      |
-| Repo etiquette (branch naming, PR rules)            | Information that changes frequently                |
-| Architectural decisions specific to this project    | Long explanations or tutorials                     |
-| Environment quirks (required env vars, setup gotchas)| File-by-file descriptions of the codebase          |
-| Non-obvious behaviours and common gotchas           | Self-evident advice ("write clean code")           |
+| ✅ Keep | ❌ Cut or reference |
+| --- | --- |
+| Bash commands Claude cannot guess | Anything Claude can learn by reading the code |
+| Code style that differs from the language default | Standard conventions Claude already knows |
+| Test runner and how to run a single test | Detailed API docs (point to the docs instead) |
+| Repo etiquette (branch naming, PR rules) | Information that changes frequently |
+| Architectural decisions specific to this project | Long explanations or tutorials |
+| Environment quirks (required env vars, setup gotchas) | File-by-file descriptions of the codebase |
+| Non-obvious behaviours and common gotchas | Self-evident advice ("write clean code") |
 
 The full table with borderline cases is in [references/include-exclude.md](references/include-exclude.md).
 
