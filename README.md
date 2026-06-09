@@ -32,9 +32,9 @@ The skill runs every block of a `CLAUDE.md` through two tests, in order:
 1. **Keep or cut.** "Would removing this cause Claude to make a mistake?" If not, it goes. The skill drops self-evident advice, standard conventions, and anything Claude already does correctly.
 2. **Copy or reference.** For what survives: "Is this already in the code or the docs?" If so, the skill replaces the copy with a pointer to the source, so there is one source of truth and no launch-time token cost.
 
-It then resolves contradictions to a single source of truth, restructures the survivors with headers and concrete phrasing, moves multi-step procedures or path-specific rules out to skills and rules, and reports the before and after line count.
+It then resolves contradictions to a single source of truth, restructures the survivors with headers and concrete phrasing, moves misplaced content out to skills, path-scoped rules, nested CLAUDE.md files, or hooks (for rules that must run every time without exception), and reports the before and after line count.
 
-The key distinction the skill teaches is that not every "reference" saves tokens. A prose pointer loads on demand and costs one line; an `@path` import loads the whole file at launch and saves nothing. The [referencing-techniques](optimizing-claude-md/references/referencing-techniques.md) reference covers all four mechanisms and when to use each.
+The key distinction the skill teaches is that not every "reference" saves tokens. A prose pointer loads on demand and costs one line; an `@path` import loads the whole file at launch and saves nothing. The [referencing-techniques](optimizing-claude-md/references/referencing-techniques.md) reference covers all five mechanisms (prose pointer, import, path-scoped rule, nested CLAUDE.md, skill), plus hooks, and when to use each.
 
 ## Installation
 
@@ -59,6 +59,7 @@ If the project has no `CLAUDE.md` yet, the skill suggests running `/init` first 
 ## Limits
 
 - The skill optimizes an existing `CLAUDE.md`; it does not author one from scratch. Use `/init` for that, then optimize.
+- It does not edit auto memory (`MEMORY.md`, the notes Claude Code writes for itself). It only routes learning-type content found in `CLAUDE.md` toward that system, since auto memory already captures discovered facts on its own.
 - It only points to documentation that exists. It will not invent references, and it verifies each pointer resolves before writing it.
 - It judges form and structure against Anthropic's guidance, not the correctness of your project's rules. If a rule is wrong, the skill keeps it; it only decides whether it belongs in `CLAUDE.md` and how to phrase it.
 - The 200-line target is a soft ceiling. The skill never deletes a load-bearing rule just to hit a number.

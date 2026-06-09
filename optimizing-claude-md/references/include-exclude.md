@@ -22,6 +22,7 @@ These fail the keep test. Removing them changes nothing, because Claude either a
 - **Self-evident advice.** "Write clean code", "add tests", "handle errors gracefully", "keep functions small". Noise that dilutes the real rules.
 - **Information that changes frequently.** Current version numbers, a sprint's task list, the name of whoever owns a module this month. It goes stale and starts lying.
 - **File-by-file narration of the codebase.** A paragraph per file describing what it does. Claude reads the file when it needs it.
+- **Learnings auto memory already records.** Notes that read like something Claude discovered rather than an instruction someone wrote ("turns out the flaky test is the Redis timeout", "the build needs `--legacy-peer-deps`") belong in auto memory (`MEMORY.md`, maintained by Claude itself). A standing instruction the team wants enforced stays in CLAUDE.md; a discovered fact duplicating the other memory system goes.
 
 ## Reference instead of copy
 
@@ -39,6 +40,8 @@ These pass the keep test (Claude does need the information) but fail the copy te
 - **A convention that is partly enforced by tooling.** If the linter catches it, cut it. If the linter does *not* catch it but reviewers always do, keep it.
 - **Architecture that is documented in an ADR.** Keep the one-line decision and its consequence in CLAUDE.md if Claude needs it every session; point to the ADR for the reasoning.
 - **Something true of only one directory.** Do not keep it in the root CLAUDE.md. Move it to a path-scoped rule or a nested CLAUDE.md so it loads only when Claude works there.
+- **A rule phrased "always run X after/before Y".** If it must happen with zero exceptions, make it a hook and cut the line: CLAUDE.md is advisory, hooks are deterministic. Keep it as prose only when judgment is involved in applying it.
+- **An ancestor CLAUDE.md from another team in a monorepo.** Not yours to optimize. Suggest excluding it locally with the `claudeMdExcludes` setting instead of editing it.
 
 ## The recurring trap
 
