@@ -1,0 +1,16 @@
+{
+  "name": "skill-claudemd",
+  "owner": {
+    "name": "Qiaeru"
+  },
+  "metadata": {
+    "description": "Marketplace for the claudemd plugin: a skill that trims a project's CLAUDE.md to what is strictly necessary."
+  },
+  "plugins": [
+    {
+      "name": "claudemd",
+      "source": "./",
+      "description": "Optimize a project's CLAUDE.md to be short, specific, and free of duplication, following Anthropic's memory and best-practice guidance."
+    }
+  ]
+}

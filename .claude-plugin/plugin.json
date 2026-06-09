@@ -1,0 +1,11 @@
+{
+  "name": "claudemd",
+  "description": "Optimize a project's CLAUDE.md to be short, specific, and free of duplication, following Anthropic's memory and best-practice guidance.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Qiaeru"
+  },
+  "homepage": "https://github.com/Qiaeru/skill-claudemd",
+  "repository": "https://github.com/Qiaeru/skill-claudemd",
+  "license": "MIT"
+}

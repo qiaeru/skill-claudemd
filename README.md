@@ -10,6 +10,9 @@ This skill applies Anthropic's published guidance for [memory files](https://cod
 
 ```text
 skill-claudemd/
+├── .claude-plugin/
+│   ├── plugin.json
+│   └── marketplace.json
 ├── .github/
 │   └── FUNDING.yml
 ├── .gitattributes
@@ -17,13 +20,16 @@ skill-claudemd/
 ├── README.md
 ├── CHANGELOG.md
 ├── LICENSE
-└── optimizing-claude-md/
-    ├── SKILL.md
-    └── references/
-        ├── include-exclude.md
-        ├── referencing-techniques.md
-        └── examples.md
+└── skills/
+    └── optimizing-claude-md/
+        ├── SKILL.md
+        └── references/
+            ├── include-exclude.md
+            ├── referencing-techniques.md
+            └── examples.md
 ```
+
+The repository doubles as a Claude Code plugin named `claudemd` and as its own plugin marketplace: `plugin.json` describes the plugin (the whole repository, with the skill under `skills/`), and `marketplace.json` lists it so Claude Code can install and update it straight from GitHub.
 
 ## How it works
 
@@ -34,25 +40,34 @@ The skill runs every block of a `CLAUDE.md` through two tests, in order:
 
 It then resolves contradictions to a single source of truth, restructures the survivors with headers and concrete phrasing, moves misplaced content out to skills, path-scoped rules, nested CLAUDE.md files, or hooks (for rules that must run every time without exception), and reports the before and after line count.
 
-The key distinction the skill teaches is that not every "reference" saves tokens. A prose pointer loads on demand and costs one line; an `@path` import loads the whole file at launch and saves nothing. The [referencing-techniques](optimizing-claude-md/references/referencing-techniques.md) reference covers all five mechanisms (prose pointer, import, path-scoped rule, nested CLAUDE.md, skill), plus hooks, and when to use each.
+The key distinction the skill teaches is that not every "reference" saves tokens. A prose pointer loads on demand and costs one line; an `@path` import loads the whole file at launch and saves nothing. The [referencing-techniques](skills/optimizing-claude-md/references/referencing-techniques.md) reference covers all five mechanisms (prose pointer, import, path-scoped rule, nested CLAUDE.md, skill), plus hooks, and when to use each.
 
 ## Installation
 
-Claude Code loads a project's skills from the `.claude/skills/` folder at the root of that project, and global skills from `~/.claude/skills/`.
+### As a plugin (recommended)
 
-The repo keeps the skill as one copyable block. The [optimizing-claude-md/](optimizing-claude-md/) folder already holds `SKILL.md` and its `references/` directory under the exact name Claude Code expects.
+The plugin installs once and updates through Claude Code, with no re-copying. Inside Claude Code, add this repository as a marketplace, then install the plugin:
 
-To install it in a project, copy the `optimizing-claude-md/` folder into that project's `.claude/skills/` directory, creating that directory if it does not exist. For an installation that applies to all your projects, copy the same folder into `~/.claude/skills/` instead.
+```shell
+/plugin marketplace add Qiaeru/skill-claudemd
+/plugin install claudemd@skill-claudemd
+```
 
-Restart Claude Code so the skill is detected. You can confirm it was picked up by asking Claude for the list of available skills or by invoking it by name.
+When a new version of the plugin is published, update it with `/plugin update claudemd`, or let Claude Code's automatic update pick it up. You can confirm the skill was loaded by asking Claude for the list of available skills.
 
-When you change the skill in this repo, re-copy the `optimizing-claude-md/` folder into the target project's `.claude/skills/` (or its global equivalent) and restart Claude Code, since skill content is not hot-reloaded.
+### By manual copy
+
+Claude Code also loads a project's standalone skills from the `.claude/skills/` folder at the root of that project, and global skills from `~/.claude/skills/`.
+
+To install the skill this way, copy the [skills/optimizing-claude-md/](skills/optimizing-claude-md/) folder into that project's `.claude/skills/` directory, creating that directory if it does not exist. For an installation that applies to all your projects, copy the same folder into `~/.claude/skills/` instead. Restart Claude Code so the skill is detected.
+
+When you change the skill in this repo, re-copy the `skills/optimizing-claude-md/` folder into the target project's `.claude/skills/` (or its global equivalent) and restart Claude Code, since skill content is not hot-reloaded.
 
 ## Usage
 
 Once installed, ask Claude to "optimize the CLAUDE.md" (or trim, audit, shrink, clean up, improve it). Claude recognizes the request from the skill's `description` and runs the procedure: it reads the current `CLAUDE.md`, inventories the project's docs, then cuts, references, de-duplicates, and restructures, ending with a before and after line count.
 
-You can also invoke it explicitly by name for a full pass, or point it at a specific file (`CLAUDE.local.md`, a nested `CLAUDE.md`, or an `AGENTS.md` you want wired up by import).
+You can also invoke it explicitly by name for a full pass (`/claudemd:optimizing-claude-md` when installed as a plugin, `/optimizing-claude-md` when copied manually), or point it at a specific file (`CLAUDE.local.md`, a nested `CLAUDE.md`, or an `AGENTS.md` you want wired up by import).
 
 If the project has no `CLAUDE.md` yet, the skill suggests running `/init` first to generate a starting point from the codebase, then optimizes the result.
 
