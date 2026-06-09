@@ -44,12 +44,14 @@ The key distinction the skill teaches is that not every "reference" saves tokens
 
 ## Installation
 
+The recommended path is the Claude Code plugin; copying the folder by hand stays available as a fallback. The two modes coexist: the `.claude-plugin/` manifest does not interfere with a manual copy into `.claude/skills/`.
+
 ### As a plugin (recommended)
 
 The plugin installs once and updates through Claude Code, with no re-copying. Inside Claude Code, add this repository as a marketplace, then install the plugin:
 
-```shell
-/plugin marketplace add Qiaeru/skill-claudemd
+```text
+/plugin marketplace add qiaeru/skill-claudemd
 /plugin install claudemd@skill-claudemd
 ```
 

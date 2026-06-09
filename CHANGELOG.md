@@ -8,8 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- Plugin distribution: the repository is now a Claude Code plugin (`claudemd`) and its own marketplace, installable with `/plugin marketplace add Qiaeru/skill-claudemd` then `/plugin install claudemd@skill-claudemd`, with updates through `/plugin update`. Manual copy into `.claude/skills/` remains supported.
-
+- Plugin distribution: the repository is now a Claude Code plugin (`claudemd`) and its own marketplace, installable with `/plugin marketplace add qiaeru/skill-claudemd` then `/plugin install claudemd@skill-claudemd`, with updates through `/plugin update`. Manual copy into `.claude/skills/` remains supported.
 - Nested CLAUDE.md as a fifth referencing mechanism (loads on demand when Claude reads files in that directory, not at launch).
 - Hooks as a relocation target for rules that must run every time without exception.
 - Auto memory awareness: discovered learnings route to Claude-written `MEMORY.md` instead of staying in CLAUDE.md.
