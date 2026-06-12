@@ -8,9 +8,9 @@ The point of optimizing CLAUDE.md is to stop copying things that already live el
 | --- | --- | --- | --- |
 | Prose pointer | No | One line (the pointer) | Large or only-sometimes-relevant docs |
 | `@path` import | Yes, in full | The whole file | Small files needed every session |
-| Path-scoped rule | Only when a matching file is touched | Zero until then | Conventions tied to one file type or pattern |
+| Path-scoped rule | Only when Claude reads a matching file | Zero until then | Conventions tied to one file type or pattern |
 | Nested CLAUDE.md | Only when Claude reads files in that directory | Zero until then | Conventions covering one whole subtree |
-| Skill | Only when relevant or invoked | Zero until then | Repeatable multi-step workflows |
+| Skill | Body only when relevant or invoked | Its description line | Repeatable multi-step workflows |
 
 Hooks belong in the same decision but are not a referencing mechanism: a hook never enters context at all, it runs as a shell command at a fixed lifecycle event. See the Hook section below.
 
@@ -43,6 +43,8 @@ Both relative and absolute paths work; relative paths resolve against the file t
 
 Because the whole file enters context at launch, only import when **all** of these hold: the file is small, you need it in every session, and it is stable. A 400-line API doc fails all three, use a pointer. A 15-line list of npm scripts you reference constantly is a reasonable import.
 
+One legitimate import that surprises people: a gitignored `CLAUDE.local.md` exists only in the worktree where it was created, so to share personal instructions across git worktrees, import a file from the home directory instead (`@~/.claude/my-project-instructions.md`).
+
 ### The AGENTS.md pattern
 
 Claude Code reads `CLAUDE.md`, not `AGENTS.md`. If the repo already maintains `AGENTS.md` for other tools, do not copy it into CLAUDE.md. Import it, then add any Claude-specific lines below:
@@ -73,13 +75,15 @@ paths:
 - Use the standard error envelope.
 ```
 
-Move a block out of CLAUDE.md into a path-scoped rule when it is true of only part of the codebase. A rule file with no `paths:` field loads every session, same as CLAUDE.md, so it only helps if you scope it. Rules are discovered recursively under `.claude/rules/`, symlinks resolve (handy for sharing a rule set across projects), and `~/.claude/rules/` holds user-level rules that load before project rules.
+Move a block out of CLAUDE.md into a path-scoped rule when it is true of only part of the codebase. A rule file with no `paths:` field loads every session, same as CLAUDE.md, so it only helps if you scope it. Rules are discovered recursively under `.claude/rules/`, symlinks resolve (handy for sharing a rule set across projects), and `~/.claude/rules/` holds user-level rules that load before project rules. To verify a scoped rule actually fires, the `InstructionsLoaded` hook logs every instruction file as it loads, and why.
 
 ## Nested CLAUDE.md
 
 A CLAUDE.md inside a subdirectory does not load at launch. Claude pulls it in when it reads files in that directory, so it behaves like a path-scoped rule whose scope is the directory tree itself.
 
 Move a block out of the root CLAUDE.md into a nested one when a whole subtree has its own conventions: a `frontend/` app inside a monorepo, a package with its own build commands. Prefer a path-scoped rule when the convention follows a file pattern that crosses directories (`**/*.test.ts`).
+
+One behavioural difference to know: after `/compact`, the project-root CLAUDE.md is re-read from disk and re-injected automatically, while a nested CLAUDE.md is not; it reloads the next time Claude reads a file in its directory. A rule that must survive long sessions intact is safer at the root.
 
 The reverse direction also matters: CLAUDE.md files in directories *above* the working directory load in full at launch. In a monorepo, an ancestor CLAUDE.md from another team that does not apply is not yours to edit; exclude it locally with the `claudeMdExcludes` setting instead.
 
@@ -91,9 +95,9 @@ Move a rule out of CLAUDE.md into a hook when it must happen every time with zer
 
 ## Skill
 
-A skill (`.claude/skills/<name>/SKILL.md`) loads on demand, when its `description` matches the task or the user invokes it by name. It costs nothing at launch.
+A skill (`.claude/skills/<name>/SKILL.md`) loads on demand, when its `description` matches the task or the user invokes it by name. To be precise about the cost: the description is always in context (that is how Claude finds the skill), the body costs nothing until it loads. Moving a block to a skill therefore costs about the same at launch as leaving a prose pointer.
 
-Move a block out of CLAUDE.md into a skill when it is a repeatable, multi-step procedure rather than a standing fact: a release process, a scaffolding routine, a domain-specific workflow. Standing facts ("we use 2-space indents") stay in CLAUDE.md; procedures ("how to cut a release") become skills.
+Move a block out of CLAUDE.md into a skill when it is a repeatable, multi-step procedure rather than a standing fact: a release process, a scaffolding routine, a domain-specific workflow. Standing facts ("we use 2-space indents") stay in CLAUDE.md; procedures ("how to cut a release") become skills. A skill can also carry a `paths:` frontmatter field, like a rule, so a procedure tied to one part of the codebase activates only when matching files are involved.
 
 ## Decision tree
 

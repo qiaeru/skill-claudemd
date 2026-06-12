@@ -1,6 +1,6 @@
 # Before and after
 
-Three worked optimizations. Each shows the original block, the problem, and the optimized result.
+Four worked optimizations. Each shows the original block, the problem, and the optimized result.
 
 ## 1. Duplication turned into a pointer
 
@@ -87,6 +87,36 @@ A release runbook sitting in CLAUDE.md, loaded every session even though release
 
 Even that line is optional, since a well-described skill is found without it.
 
-## The pattern across all three
+## 4. A zero-exception rule turned into a hook
 
-Each fix removes content from the always-loaded budget without losing any information: the API detail, the release steps, and the resolved test rule are all still reachable. What changed is *when* they enter context. CLAUDE.md shrinks toward the small set of facts Claude needs in memory at all times, and everything else loads on demand.
+A rule that must hold every single time, written as prose and dressed up with emphasis to compensate.
+
+**Before** (in CLAUDE.md):
+
+```markdown
+## Linting
+- IMPORTANT: ALWAYS run `npm run lint:fix` after editing any file. NEVER skip this.
+```
+
+**Problem.** CLAUDE.md is advisory: in a long session Claude can still overlook the rule, and no amount of shouting changes that. The capitals also erode the force of emphasis everywhere else in the file. A rule with zero exceptions does not belong to judgment at all.
+
+**After.** A `PostToolUse` hook in `.claude/settings.json`, and the CLAUDE.md line is cut entirely:
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{ "type": "command", "command": "npm run lint:fix" }]
+      }
+    ]
+  }
+}
+```
+
+The linter now runs deterministically after every edit, whether or not Claude remembers, and CLAUDE.md is one line shorter and one IMPORTANT quieter.
+
+## The pattern across all four
+
+Each fix removes content from the always-loaded budget without losing anything: the API detail, the release steps, and the resolved test rule are all still reachable, and the lint rule still fires, now without exception. What changed is *when* they enter context, or whether they need context at all. CLAUDE.md shrinks toward the small set of facts Claude needs in memory at all times, and everything else loads on demand or runs deterministically.

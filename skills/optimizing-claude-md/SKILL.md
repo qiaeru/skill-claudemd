@@ -13,7 +13,7 @@ This skill follows Anthropic's own guidance for memory files and CLAUDE.md. See 
 
 Apply when the user asks to optimize, trim, audit, shrink, clean up, or improve a CLAUDE.md, or whenever a CLAUDE.md has grown well past 200 lines. The same procedure works on every memory file in the hierarchy:
 
-- Managed policy, organization-wide: a platform-specific path (for example `/Library/Application Support/ClaudeCode/CLAUDE.md` on macOS); usually read-only for the user, flag conflicts instead of editing it
+- Managed policy, organization-wide: a platform-specific path (for example `/Library/Application Support/ClaudeCode/CLAUDE.md` on macOS) or the `claudeMd` key in `managed-settings.json`; usually read-only for the user, flag conflicts instead of editing it
 - User, all projects: `~/.claude/CLAUDE.md`
 - Project, shared with the team: `./CLAUDE.md` or `./.claude/CLAUDE.md`
 - Local, private to one checkout: `./CLAUDE.local.md` (gitignored)
@@ -48,9 +48,9 @@ This is the core move and the one most often done wrong. There are five mechanis
 
 - **Prose pointer (default).** A plain sentence naming where the information lives: "Architecture overview: `docs/architecture.md`." It is *not* auto-loaded, so it costs only its one line at launch; Claude reads the target on demand when the task needs it. Use this for anything large or only-sometimes-relevant.
 - **`@path` import.** `@docs/git-workflow.md` expands the whole file into context at launch, exactly as if you had pasted it. It does **not** save tokens. Reserve it for small files that are needed every session, or to wire up `@AGENTS.md`.
-- **Path-scoped rule** (`.claude/rules/*.md` with a `paths:` frontmatter field). Loads only when Claude touches matching files. Use for conventions tied to one file type or pattern.
+- **Path-scoped rule** (`.claude/rules/*.md` with a `paths:` frontmatter field). Loads only when Claude reads matching files. Use for conventions tied to one file type or pattern.
 - **Nested CLAUDE.md.** A CLAUDE.md in a subdirectory loads on demand, when Claude reads files in that directory, not at launch. Use for conventions that cover one whole subtree.
-- **Skill.** Loads on demand when relevant or invoked. Use for repeatable multi-step workflows, not for always-on facts.
+- **Skill.** The body loads on demand when relevant or invoked; only its one-line description sits in context. Use for repeatable multi-step workflows, not for always-on facts.
 
 The decision tree and concrete examples are in [references/referencing-techniques.md](references/referencing-techniques.md).
 
@@ -97,4 +97,4 @@ The full table with borderline cases is in [references/include-exclude.md](refer
 
 ## Examples
 
-See [references/examples.md](references/examples.md) for before and after optimizations: duplication turned into pointers, a contradiction resolved, and a multi-step block moved out to a skill.
+See [references/examples.md](references/examples.md) for before and after optimizations: duplication turned into pointers, a contradiction resolved, a multi-step block moved out to a skill, and a zero-exception rule turned into a hook.
