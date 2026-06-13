@@ -11,8 +11,8 @@ These earn their tokens because Claude cannot derive them and needs them in near
 - **Repository etiquette.** Branch naming, commit message format, PR conventions, who merges, whether to push straight to main.
 - **Architectural decisions specific to this project.** "State lives in the store, never in component local state", "all API calls go through `src/api/client.ts`", "this service is event-sourced". The *decision and its location*, not a tutorial on the pattern.
 - **Environment quirks.** Required env vars, a local service that must be running for tests (Redis, a database), a setup step that is easy to miss, a platform-specific gotcha.
-- **Non-obvious behaviours and gotchas.** The thing that bites every newcomer: a function that looks pure but writes to disk, a test that is flaky under parallelism, a generated file that must not be edited by hand.
-- **Compaction instructions.** A line like "When compacting, always preserve the full list of modified files and the test commands" is honoured at `/compact` time and has no other home; it can only work from a file that is in context when compaction runs.
+- **Non-obvious behaviors and gotchas.** The thing that bites every newcomer: a function that looks pure but writes to disk, a test that is flaky under parallelism, a generated file that must not be edited by hand.
+- **Compaction instructions.** A line like "When compacting, always preserve the full list of modified files and the test commands" is honored at `/compact` time and has no other home; it can only work from a file that is in context when compaction runs.
 
 ## Cut entirely
 

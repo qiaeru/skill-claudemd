@@ -83,7 +83,7 @@ A CLAUDE.md inside a subdirectory does not load at launch. Claude pulls it in wh
 
 Move a block out of the root CLAUDE.md into a nested one when a whole subtree has its own conventions: a `frontend/` app inside a monorepo, a package with its own build commands. Prefer a path-scoped rule when the convention follows a file pattern that crosses directories (`**/*.test.ts`).
 
-One behavioural difference to know: after `/compact`, the project-root CLAUDE.md is re-read from disk and re-injected automatically, while a nested CLAUDE.md is not; it reloads the next time Claude reads a file in its directory. A rule that must survive long sessions intact is safer at the root.
+One behavioral difference to know: after `/compact`, the project-root CLAUDE.md is re-read from disk and re-injected automatically, while a nested CLAUDE.md is not; it reloads the next time Claude reads a file in its directory. A rule that must survive long sessions intact is safer at the root.
 
 The reverse direction also matters: CLAUDE.md files in directories *above* the working directory load in full at launch. In a monorepo, an ancestor CLAUDE.md from another team that does not apply is not yours to edit; exclude it locally with the `claudeMdExcludes` setting instead.
 

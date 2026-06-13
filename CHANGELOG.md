@@ -16,7 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Auto memory awareness: discovered learnings route to Claude-written `MEMORY.md` instead of staying in CLAUDE.md.
 - Verification steps: `/memory` to confirm which memory files load, the `InstructionsLoaded` hook to confirm a path-scoped rule fires.
 - Memory hierarchy completed: managed policy (file or `claudeMd` settings key), project and user rules; monorepo ancestor files excluded via `claudeMdExcludes` rather than edited.
-- Compaction behaviour as optimization input: the root CLAUDE.md is re-injected after `/compact`, nested ones reload only on the next read, and compaction-preservation instructions join the keep list.
+- Compaction behavior as optimization input: the root CLAUDE.md is re-injected after `/compact`, nested ones reload only on the next read, and compaction-preservation instructions join the keep list.
 - The worktree caveat for `CLAUDE.local.md` (gitignored, so per-worktree) with the home-directory import as the fix.
 - Skills can carry a `paths:` frontmatter field, so a procedure tied to one part of the codebase activates only on matching files.
 - `$schema` and `keywords` fields in `plugin.json` for editor validation and discovery.

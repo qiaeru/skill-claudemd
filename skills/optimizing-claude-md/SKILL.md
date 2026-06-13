@@ -5,7 +5,7 @@ description: Optimize a project's CLAUDE.md to be short, specific, and free of d
 
 # Optimizing CLAUDE.md
 
-CLAUDE.md is loaded in full at the start of every session, so every line costs tokens for the whole conversation and competes with the user's real instructions. A bloated file does not just waste tokens, it lowers adherence: the important rules get lost in the noise. Optimizing means keeping only what changes Claude's behaviour and cannot be derived from the code, and pointing to everything else instead of copying it.
+CLAUDE.md is loaded in full at the start of every session, so every line costs tokens for the whole conversation and competes with the user's real instructions. A bloated file wastes context and lowers adherence: the important rules get lost in the noise. Optimizing means keeping only what changes Claude's behavior and cannot be derived from the code, and pointing to everything else instead of copying it.
 
 This skill follows Anthropic's own guidance for memory files and CLAUDE.md. See the [official memory docs](https://code.claude.com/docs/en/memory) and [best practices](https://code.claude.com/docs/en/best-practices).
 
@@ -64,7 +64,7 @@ The decision tree and concrete examples are in [references/referencing-technique
 | Repo etiquette (branch naming, PR rules) | Information that changes frequently |
 | Architectural decisions specific to this project | Long explanations or tutorials |
 | Environment quirks (required env vars, setup gotchas) | File-by-file descriptions of the codebase |
-| Non-obvious behaviours and common gotchas | Self-evident advice ("write clean code") |
+| Non-obvious behaviors and common gotchas | Self-evident advice ("write clean code") |
 
 The full table with borderline cases is in [references/include-exclude.md](references/include-exclude.md).
 
