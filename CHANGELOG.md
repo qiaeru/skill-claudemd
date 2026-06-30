@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Currency check on surviving content: the procedure and final checklist now verify that every command and path the skill keeps still runs or resolves, since a stale rule misleads worse than a missing one.
+
 ## [1.1.0] - 2026-06-12
 
 ### Added

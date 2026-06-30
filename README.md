@@ -38,7 +38,7 @@ The skill runs every block of a `CLAUDE.md` through two tests, in order:
 1. **Keep or cut.** "Would removing this cause Claude to make a mistake?" If not, it goes. The skill drops self-evident advice, standard conventions, and anything Claude already does correctly.
 2. **Copy or reference.** For what survives: "Is this already in the code or the docs?" If so, the skill replaces the copy with a pointer to the source, so there is one source of truth and no launch-time token cost.
 
-It then resolves contradictions to a single source of truth, restructures the survivors with headers and concrete phrasing, moves misplaced content out to skills, path-scoped rules, nested CLAUDE.md files, or hooks (for rules that must run every time without exception), and reports the before and after line count.
+It then resolves contradictions to a single source of truth, verifies that every command and path it keeps still works, restructures the survivors with headers and concrete phrasing, moves misplaced content out to skills, path-scoped rules, nested CLAUDE.md files, or hooks (for rules that must run every time without exception), and reports the before and after line count.
 
 The key distinction the skill teaches is that not every "reference" saves tokens. A prose pointer loads on demand and costs one line; an `@path` import loads the whole file at launch and saves nothing. The [referencing-techniques](skills/optimizing-claude-md/references/referencing-techniques.md) reference covers all five mechanisms (prose pointer, import, path-scoped rule, nested CLAUDE.md, skill), plus hooks, and when to use each.
 

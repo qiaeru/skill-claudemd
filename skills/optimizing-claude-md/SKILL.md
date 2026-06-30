@@ -37,7 +37,7 @@ Run every block of the file through two questions, in order.
 2. **Inventory the project's documentation.** Scan `README`, `docs/`, `CONTRIBUTING`, package manifests, ADRs, existing skills under `.claude/skills/`, and any rules. Build a short map of what is documented where. This map is what lets you replace duplication with references rather than guesses.
 3. **Classify every block** as keep, cut, or reference using the include/exclude table in [references/include-exclude.md](references/include-exclude.md).
 4. **Pick a mechanism for each "reference" block.** Default to a prose pointer, because it loads on demand and costs nothing at launch. Reserve `@import`, path-scoped rules, and skills for the cases described in [references/referencing-techniques.md](references/referencing-techniques.md).
-5. **Detect contradictions.** Check for instructions that conflict within the file, across nested CLAUDE.md files and rules, or against the docs you are about to point to. Resolve each to a single source of truth; when CLAUDE.md and a doc disagree, keep the correct one and delete the other.
+5. **Detect contradictions and stale survivors.** Check for instructions that conflict within the file, across nested CLAUDE.md files and rules, or against the docs you are about to point to. Resolve each to a single source of truth; when CLAUDE.md and a doc disagree, keep the correct one and delete the other. Then verify that the content you are keeping is still current: every command you keep still runs, every path or file it names still exists. A stale rule misleads worse than a missing one, so fix it or cut it.
 6. **Restructure** the survivors: markdown headers and bullets, concrete and verifiable phrasing ("Use 2-space indentation", not "format properly"). Group related rules.
 7. **Relocate misplaced content.** Move multi-step procedures and rules that only matter for one part of the codebase out of CLAUDE.md into a skill, a path-scoped rule, or a nested CLAUDE.md, so they load only when relevant. Turn rules that must run at a fixed point with zero exceptions ("run the linter after every edit", "never write to `migrations/`") into hooks: CLAUDE.md is advisory, hooks are deterministic.
 8. **Report.** Show the before and after line count, summarize what was cut, referenced, or moved, and confirm that nothing load-bearing was lost. When the source files are tracked, prefer showing a diff before writing.
@@ -89,6 +89,7 @@ The full table with borderline cases is in [references/include-exclude.md](refer
 - Every surviving line passes the keep test.
 - No content duplicates the README, docs, or manifests; duplication became a pointer.
 - Every pointer resolves to a file that exists.
+- Every command and path in the surviving content still runs or resolves; nothing kept is stale.
 - No two instructions contradict each other, here or across nested files and rules.
 - Multi-step or path-specific content moved to a skill, a path-scoped rule, or a nested CLAUDE.md; must-always-run rules became hooks.
 - No content duplicates what auto memory already records on its own.
