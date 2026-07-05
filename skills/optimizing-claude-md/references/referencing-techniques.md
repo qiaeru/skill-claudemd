@@ -28,6 +28,8 @@ A prose pointer is just a sentence that names where the information lives:
 
 Claude does not load these at startup. It reads the target file with its normal file tools only when the task actually calls for it. That is why a pointer costs one line now instead of the whole document every session. Make the pointer specific enough that Claude knows *when* to follow it ("when touching an endpoint"), not just that the file exists.
 
+Write the path in backticks or plain prose, never with a bare `@` prefix. Import parsing only skips code spans and fenced blocks, so `@docs/foo.md` outside backticks is still an import that loads the whole file at launch. When converting an import into a pointer, dropping the `@` (or wrapping the path in backticks) is the step that actually saves the tokens.
+
 Use a prose pointer for: detailed API docs, long workflow guides, the README overview, schemas, ADRs, anything large, anything needed only occasionally.
 
 ## `@path` import

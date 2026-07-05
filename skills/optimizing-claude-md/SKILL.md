@@ -13,7 +13,7 @@ This skill follows Anthropic's own guidance for memory files and CLAUDE.md. See 
 
 Apply when the user asks to optimize, trim, audit, shrink, clean up, or improve a CLAUDE.md, or whenever a CLAUDE.md has grown well past 200 lines. The same procedure works on every memory file in the hierarchy:
 
-- Managed policy, organization-wide: a platform-specific path (for example `/Library/Application Support/ClaudeCode/CLAUDE.md` on macOS) or the `claudeMd` key in `managed-settings.json`; usually read-only for the user, flag conflicts instead of editing it
+- Managed policy, organization-wide: a platform-specific path (for example `/Library/Application Support/ClaudeCode/CLAUDE.md` on macOS) or the `claudeMd` key in `managed-settings.json`; usually read-only for the user, and `claudeMdExcludes` cannot exclude it, so flag conflicts instead of editing it
 - User, all projects: `~/.claude/CLAUDE.md`
 - Project, shared with the team: `./CLAUDE.md` or `./.claude/CLAUDE.md`
 - Local, private to one checkout: `./CLAUDE.local.md` (gitignored)
@@ -22,7 +22,7 @@ Apply when the user asks to optimize, trim, audit, shrink, clean up, or improve 
 
 Auto memory is a separate system: notes Claude writes for itself in `~/.claude/projects/<project>/memory/MEMORY.md`, loaded each session up to 200 lines or 25KB. Do not optimize it with this skill; it has its own size cap and Claude maintains it. It matters here as a routing target: content in CLAUDE.md that reads like a discovered learning (a build command Claude figured out, a debugging insight) belongs to auto memory, not to hand-written instructions.
 
-If no CLAUDE.md exists yet, suggest running `/init` first to generate a starting point from the codebase, then optimize the result with this skill.
+If no CLAUDE.md exists yet, suggest running `/init` first to generate a starting point from the codebase, then optimize the result with this skill. On an existing CLAUDE.md, `/init` suggests improvements rather than overwriting it.
 
 ## The two tests
 
@@ -40,7 +40,7 @@ Run every block of the file through two questions, in order.
 5. **Detect contradictions and stale survivors.** Check for instructions that conflict within the file, across nested CLAUDE.md files and rules, or against the docs you are about to point to. Resolve each to a single source of truth; when CLAUDE.md and a doc disagree, keep the correct one and delete the other. Then verify that the content you are keeping is still current: every command you keep still runs, every path or file it names still exists. A stale rule misleads worse than a missing one, so fix it or cut it.
 6. **Restructure** the survivors: markdown headers and bullets, concrete and verifiable phrasing ("Use 2-space indentation", not "format properly"). Group related rules.
 7. **Relocate misplaced content.** Move multi-step procedures and rules that only matter for one part of the codebase out of CLAUDE.md into a skill, a path-scoped rule, or a nested CLAUDE.md, so they load only when relevant. Turn rules that must run at a fixed point with zero exceptions ("run the linter after every edit", "never write to `migrations/`") into hooks: CLAUDE.md is advisory, hooks are deterministic.
-8. **Report.** Show the before and after line count, summarize what was cut, referenced, or moved, and confirm that nothing load-bearing was lost. When the source files are tracked, prefer showing a diff before writing.
+8. **Report.** Show the before and after line count, summarize what was cut, referenced, or moved, and confirm that nothing load-bearing was lost. When working interactively, suggest `/context` before and after: it shows the actual token footprint of the memory files at launch, which is the unit that matters. When the source files are tracked, prefer showing a diff before writing.
 
 ## Reference, don't duplicate
 
@@ -79,7 +79,7 @@ The full table with borderline cases is in [references/include-exclude.md](refer
 ## Don't
 
 - Don't cut a rule just because it is long. Apply the keep test, not a word count. A non-obvious gotcha earns its lines.
-- Don't `@import` a large doc to "save space". Imports load in full at launch; use a prose pointer.
+- Don't `@import` a large doc to "save space". Imports load in full at launch; use a prose pointer, with the path in backticks or without the `@`, since a bare `@path` outside backticks is still an import.
 - Don't invent or assume documentation. Only point to files that exist, and verify each pointer resolves before writing it.
 - Don't move team-shared project rules into `CLAUDE.local.md`; that hides them from the team. Local is for personal, machine-specific notes only.
 - Don't leave contradictions standing. If two instructions disagree, Claude picks one arbitrarily; pick for it.

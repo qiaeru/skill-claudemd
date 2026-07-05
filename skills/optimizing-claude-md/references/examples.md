@@ -108,14 +108,14 @@ A rule that must hold every single time, written as prose and dressed up with em
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
-        "hooks": [{ "type": "command", "command": "npm run lint:fix" }]
+        "hooks": [{ "type": "command", "command": "jq -r '.tool_input.file_path' | xargs -r npm run lint:fix --" }]
       }
     ]
   }
 }
 ```
 
-The linter now runs deterministically after every edit, whether or not Claude remembers, and CLAUDE.md is one line shorter and one IMPORTANT quieter.
+The hook receives the tool call as JSON on stdin, so it lints only the edited file instead of the whole tree. The linter now runs deterministically after every edit, whether or not Claude remembers, and CLAUDE.md is one line shorter and one IMPORTANT quieter.
 
 ## The pattern across all four
 

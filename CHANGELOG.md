@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- The bare `@` trap when converting an import into a prose pointer: import parsing only skips backticked spans and code blocks, so the path must lose its `@` or gain backticks for the conversion to save anything.
+- `/context` suggested alongside the line-count report to show the actual token footprint of the memory files before and after.
+- Two facts from the memory docs: `claudeMdExcludes` cannot exclude a managed policy CLAUDE.md, and `/init` on an existing CLAUDE.md suggests improvements rather than overwriting it.
+
+### Changed
+
+- The `PostToolUse` hook example now reads the edited file path from the tool call JSON on stdin instead of linting the whole tree on every edit.
+
 ## [1.2.0] - 2026-06-30
 
 ### Added
