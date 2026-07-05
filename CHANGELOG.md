@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Continuous validation: a GitHub Actions workflow (pushes, pull requests, weekly) checks the repo invariants with a local script, markdown hygiene with markdownlint-cli2, and the plugin manifests with `plugin validate`; Dependabot keeps the workflow's actions current.
 - The bare `@` trap when converting an import into a prose pointer: import parsing only skips backticked spans and code blocks, so the path must lose its `@` or gain backticks for the conversion to save anything.
 - `/context` suggested alongside the line-count report to show the actual token footprint of the memory files before and after.
 - Two facts from the memory docs: `claudeMdExcludes` cannot exclude a managed policy CLAUDE.md, and `/init` on an existing CLAUDE.md suggests improvements rather than overwriting it.
