@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-07-05
+
 ### Added
 
 - Continuous validation: a GitHub Actions workflow (pushes, pull requests, weekly) checks the repo invariants with a local script, markdown hygiene with markdownlint-cli2, and the plugin manifests with `plugin validate`; Dependabot keeps the workflow's actions current.
