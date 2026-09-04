@@ -60,7 +60,7 @@ Claude Code reads `CLAUDE.md`, not `AGENTS.md`. If the repo already maintains `A
 
 A symlink (`ln -s AGENTS.md CLAUDE.md`) also works when there is nothing Claude-specific to add. On Windows, prefer the `@AGENTS.md` import, since symlinks need Administrator privileges or Developer Mode.
 
-Running `/init` in a repo that already has an `AGENTS.md` reads it and incorporates the relevant parts into the generated CLAUDE.md, along with other tools' configs such as `.cursorrules`.
+By default `/init` reads Cursor rules (`.cursor/rules/`, `.cursorrules`) and Copilot rules (`.github/copilot-instructions.md`) and folds the relevant parts into the generated CLAUDE.md; it reads `AGENTS.md` too only with `CLAUDE_CODE_NEW_INIT=1` set. `/import` (Claude Code 2.1.213 and later) appends a one-time copy of another agent's instruction files to CLAUDE.md, which duplicates rather than references: prefer the import line above when the other file stays maintained.
 
 ## Path-scoped rule
 
@@ -95,11 +95,13 @@ A hook (configured in `.claude/settings.json`) runs a shell command at a fixed l
 
 Move a rule out of CLAUDE.md into a hook when it must happen every time with zero exceptions: "run the linter after every edit", "block writes to `migrations/`", "run the test suite before ending the turn". A rule Claude needs to *know* stays prose; a rule that must be *enforced* becomes a hook, and the CLAUDE.md line gets cut.
 
+A hook's `if` field takes permission-rule syntax (`"if": "Edit(*.ts)"`), so a hook can be scoped to a file pattern without parsing the tool input, and `once: true` on a skill's frontmatter hook removes it after its first successful run. To confirm that memory files load when you expect, the `InstructionsLoaded` hook fires for every CLAUDE.md and rule with a `load_reason` (`session_start`, `nested_traversal`, `path_glob_match`, `include`, `compact`).
+
 ## Skill
 
 A skill (`.claude/skills/<name>/SKILL.md`) loads on demand, when its `description` matches the task or the user invokes it by name. To be precise about the cost: the description is always in context (that is how Claude finds the skill), the body costs nothing until it loads. Moving a block to a skill therefore costs about the same at launch as leaving a prose pointer.
 
-Move a block out of CLAUDE.md into a skill when it is a repeatable, multi-step procedure rather than a standing fact: a release process, a scaffolding routine, a domain-specific workflow. Standing facts ("we use 2-space indents") stay in CLAUDE.md; procedures ("how to cut a release") become skills. A skill can also carry a `paths:` frontmatter field, like a rule, so a procedure tied to one part of the codebase activates only when matching files are involved.
+Move a block out of CLAUDE.md into a skill when it is a repeatable, multi-step procedure rather than a standing fact: a release process, a scaffolding routine, a domain-specific workflow. Standing facts ("we use 2-space indents") stay in CLAUDE.md; procedures ("how to cut a release") become skills. A skill can also carry a `paths:` frontmatter field, like a rule, so a procedure tied to one part of the codebase activates only when matching files are involved. A skill placed in a subdirectory's own `.claude/skills/` goes further: nothing of it, not even the description, loads until Claude reads or edits a file in that subdirectory, so a package-specific procedure in a monorepo costs zero at launch.
 
 ## Decision tree
 

@@ -115,7 +115,7 @@ A rule that must hold every single time, written as prose and dressed up with em
 }
 ```
 
-The hook receives the tool call as JSON on stdin, so it lints only the edited file instead of the whole tree. The linter now runs deterministically after every edit, whether or not Claude remembers, and CLAUDE.md is one line shorter and one IMPORTANT quieter.
+The hook receives the tool call as JSON on stdin, so it lints only the edited file instead of the whole tree. The command needs `jq` and a POSIX shell; on Windows, Claude Code runs hooks through Git Bash when it is installed, otherwise point the command at a PowerShell script that reads the same JSON from stdin. The linter now runs deterministically after every edit, whether or not Claude remembers, and CLAUDE.md is one line shorter and one IMPORTANT quieter.
 
 ## The pattern across all four
 
