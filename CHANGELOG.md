@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-09-04
+
 ### Added
 
 - Positioning against the bundled `/doctor` (Claude Code 2.1.206 and later), which trims a checked-in CLAUDE.md natively: the skill suggests it as the first pass and adds what it does not do (contradictions, stale content, choice of referencing mechanism, hooks).
