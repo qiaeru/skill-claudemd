@@ -14,15 +14,24 @@ skill-claudemd/
 │   ├── plugin.json
 │   └── marketplace.json
 ├── .github/
-│   └── FUNDING.yml
+│   ├── dependabot.yml
+│   ├── FUNDING.yml
+│   ├── scripts/
+│   │   └── validate.mjs
+│   └── workflows/
+│       └── validate.yml
 ├── .gitattributes
 ├── .gitignore
+├── .markdownlint-cli2.jsonc
 ├── README.md
 ├── CHANGELOG.md
 ├── LICENSE
 └── skills/
     └── optimizing-claude-md/
         ├── SKILL.md
+        ├── evals/
+        │   ├── evals.json
+        │   └── files/
         └── references/
             ├── include-exclude.md
             ├── referencing-techniques.md
@@ -38,7 +47,7 @@ The skill runs every block of a `CLAUDE.md` through two tests, in order:
 1. **Keep or cut.** "Would removing this cause Claude to make a mistake?" If not, it goes. The skill drops self-evident advice, standard conventions, and anything Claude already does correctly.
 2. **Copy or reference.** For what survives: "Is this already in the code or the docs?" If so, the skill replaces the copy with a pointer to the source, so there is one source of truth and no launch-time token cost.
 
-It then resolves contradictions to a single source of truth, verifies that every command and path it keeps still works, restructures the survivors with headers and concrete phrasing, moves misplaced content out to skills, path-scoped rules, nested CLAUDE.md files, or hooks (for rules that must run every time without exception), and reports the before and after line count.
+It then resolves contradictions to a single source of truth, verifies that every command and path it keeps still works, restructures the survivors with headers and concrete phrasing while leaving the wording of what it keeps alone, moves misplaced content out to skills, path-scoped rules, nested CLAUDE.md files, or hooks (for rules that must run every time without exception), shows the block-by-block classification and the diff before writing anything, and reports the before and after line and character counts.
 
 The key distinction the skill teaches is that not every "reference" saves tokens. A prose pointer loads on demand and costs one line; an `@path` import loads the whole file at launch and saves nothing. The [referencing-techniques](skills/optimizing-claude-md/references/referencing-techniques.md) reference covers all five mechanisms (prose pointer, import, path-scoped rule, nested CLAUDE.md, skill), plus hooks, and when to use each.
 
@@ -73,9 +82,16 @@ You can also invoke it explicitly by name for a full pass (`/claudemd:optimizing
 
 If the project has no `CLAUDE.md` yet, the skill suggests running `/init` first to generate a starting point from the codebase, then optimizes the result.
 
+Claude Code's bundled `/doctor` (2.1.206 and later) already proposes a first-pass trim of a checked-in `CLAUDE.md`: it cuts what Claude can derive from the codebase and migrates procedures out. Run it first if you like; this skill is the deeper pass on what remains (contradictions, stale commands and paths, the choice between referencing mechanisms, hooks).
+
+## Testing the skill
+
+The skill ships with eval cases in [skills/optimizing-claude-md/evals/](skills/optimizing-claude-md/evals/): fixture projects under `files/` and, in `evals.json`, the prompts to run against them with the assertions a good optimization must satisfy. The [skill-creator](https://github.com/anthropics/claude-plugins-official/tree/main/plugins/skill-creator) plugin runs them in isolated subagents, with and without the skill, and grades each assertion. Repo invariants (frontmatter, links, style, version, the eval file) are checked by `node .github/scripts/validate.mjs`, which CI runs on every push. The cases are versioned; run results (`skills/*-workspace/`, `evals/results/`) are gitignored. When installing by manual copy, the `evals/` folder can be left out.
+
 ## Limits
 
 - The skill optimizes an existing `CLAUDE.md`; it does not author one from scratch. Use `/init` for that, then optimize.
+- It overlaps with `/doctor` on the derivable-content cut, on purpose: `/doctor` is the quick native pass, this skill adds the checks `/doctor` does not make.
 - It does not edit auto memory (`MEMORY.md`, the notes Claude Code writes for itself). It only routes learning-type content found in `CLAUDE.md` toward that system, since auto memory already captures discovered facts on its own.
 - It only points to documentation that exists. It will not invent references, and it verifies each pointer resolves before writing it.
 - It judges form and structure against Anthropic's guidance, not the correctness of your project's rules. If a rule is wrong, the skill keeps it; it only decides whether it belongs in `CLAUDE.md` and how to phrase it.

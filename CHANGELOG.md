@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Positioning against the bundled `/doctor` (Claude Code 2.1.206 and later), which trims a checked-in CLAUDE.md natively: the skill suggests it as the first pass and adds what it does not do (contradictions, stale content, choice of referencing mechanism, hooks).
+- A propose-then-write step: the block-by-block classification and the diff are shown, and confirmed when interactive, before any file is touched.
+- A minimal-diff rule: lines that pass both tests keep their wording and order.
+- Same-level duplicates (`./CLAUDE.md`, `./.claude/CLAUDE.md`, `CLAUDE.local.md`, all concatenated at launch) join the contradiction pass, and character counts join the line counts in the report.
+- `when_to_use` frontmatter with the extra trigger phrases (shrink, slim down, clean up, prune, review, a `/doctor` follow-up).
+- Eval cases under `skills/optimizing-claude-md/evals/`: two fixture projects with the prompts and expectations to run against them through the `skill-creator` plugin. The first iteration showed the skill's edge over the bare model is the propose-before-write step and the minimal diff; the expectations check both.
+- Facts from the current docs: a CLAUDE.md over 4 MiB is skipped; a skill in a subdirectory's own `.claude/skills/` costs zero at launch; the hook `if` field and the `InstructionsLoaded` load reasons; the Linux managed-policy path; `/import`.
+- Validator checks for a bare `@path` outside code in the skill's markdown, for the `description` plus `when_to_use` length, and for the eval file's shape and fixture paths.
+
+### Changed
+
+- `/init` reads `AGENTS.md` only with `CLAUDE_CODE_NEW_INIT=1` (by default it reads Cursor and Copilot rules); the previous wording said it always did.
+- The final checklist folded into the procedure and the Don't list; the five-mechanism bullets compressed into a table.
+- README layout brought up to date with the 1.3.0 CI files, plus a Testing section.
+
+### Fixed
+
+- The hook example's portability note: it needs `jq` and a POSIX shell.
+
 ## [1.3.0] - 2026-07-05
 
 ### Added
