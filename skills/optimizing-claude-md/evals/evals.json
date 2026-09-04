@@ -1,0 +1,84 @@
+{
+  "skill_name": "optimizing-claude-md",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Optimize the CLAUDE.md of the project in evals/files/bloated/. It has grown a lot and I think Claude ignores half of it now.",
+      "expected_output": "A rewritten evals/files/bloated/CLAUDE.md, well under its original 78 lines, that keeps the non-guessable commands and gotchas, replaces the API endpoint dump with a prose pointer to docs/api.md, resolves the test-suite contradiction, drops the self-evident advice and the derivable dependency list, and reports the before and after counts.",
+      "files": [
+        "evals/files/bloated/CLAUDE.md",
+        "evals/files/bloated/README.md",
+        "evals/files/bloated/package.json",
+        "evals/files/bloated/docs/api.md",
+        "evals/files/bloated/docs/release.md",
+        "evals/files/bloated/openapi.yaml",
+        "evals/files/bloated/src/generated/types.ts",
+        "evals/files/bloated/docker-compose.yml"
+      ],
+      "expectations": [
+        "The output CLAUDE.md has fewer than 40 lines",
+        "The output CLAUDE.md still contains the single-test command `npm test -- <path>` or an equivalent that names the path argument",
+        "The output CLAUDE.md still says that `src/generated/` must not be edited by hand",
+        "The output CLAUDE.md still says the API tests need a local Redis",
+        "The output CLAUDE.md does not list the endpoints POST /v1/users, GET /v1/users/:id, or PATCH /v1/users/:id",
+        "The output CLAUDE.md points to docs/api.md without a bare `@docs/api.md` import (the path is in backticks or plain prose, or the line is gone)",
+        "The output CLAUDE.md does not import docs/release.md with `@docs/release.md`",
+        "The output CLAUDE.md contains exactly one rule about running the test suite, and it does not both require the full suite on every commit and forbid it",
+        "The output CLAUDE.md does not contain the phrases 'write clean code', 'meaningful variable names', or 'follow best practices'",
+        "The output CLAUDE.md does not list the dependencies express, pg, or zod",
+        "Every file path mentioned in the output CLAUDE.md exists in the fixture project",
+        "The response reports the before and after line counts",
+        "The response shows the classification or the diff before the file is written, or states that it is writing after showing it",
+        "The kept lines about Redis, `src/generated/`, `DATABASE_URL`, 2-space indentation, and ES modules appear with their original wording (at least 4 of the 5 verbatim), not rephrased",
+        "The lint rule is not silently weakened: either it stays as 'after editing any file' or it becomes a hook; it is not rewritten as 'before committing' without a hook",
+        "The response reports character counts alongside line counts"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "hey, evals/files/bloated/CLAUDE.md is huge, can you slim it down? the release steps should probably live somewhere else, and I want the lint rule to actually run every time, Claude keeps forgetting it",
+      "expected_output": "The same trim as eval 1, plus the Releasing section moved out to a skill (or a pointer to docs/release.md) and the ALWAYS-run-lint rule turned into a PostToolUse hook in .claude/settings.json with the CLAUDE.md line removed.",
+      "files": [
+        "evals/files/bloated/CLAUDE.md",
+        "evals/files/bloated/README.md",
+        "evals/files/bloated/package.json",
+        "evals/files/bloated/docs/api.md",
+        "evals/files/bloated/docs/release.md",
+        "evals/files/bloated/openapi.yaml",
+        "evals/files/bloated/src/generated/types.ts",
+        "evals/files/bloated/docker-compose.yml"
+      ],
+      "expectations": [
+        "The output CLAUDE.md no longer contains the numbered release steps",
+        "The release procedure is reachable: either a skill under .claude/skills/ was created or the output CLAUDE.md points to docs/release.md as a prose pointer",
+        "A PostToolUse hook matching Edit or Write that runs the lint command exists in .claude/settings.json",
+        "The output CLAUDE.md no longer contains the 'ALWAYS run npm run lint:fix' line",
+        "The output CLAUDE.md contains no line written in all-caps emphasis such as IMPORTANT or NEVER",
+        "The output CLAUDE.md has fewer than 40 lines",
+        "The kept lines about Redis, `src/generated/`, and `DATABASE_URL` appear with their original wording, not rephrased",
+        "The response shows the block-by-block classification or the diff before stating that the files were written"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Audit evals/files/lean/CLAUDE.md and tell me what you would change.",
+      "expected_output": "Little or nothing. The file is already short and every line is load-bearing. The skill should recognize that, keep the odd-looking but non-obvious gotchas, not invent docs to point to, and not rewrite the surviving lines.",
+      "files": [
+        "evals/files/lean/CLAUDE.md",
+        "evals/files/lean/README.md",
+        "evals/files/lean/Makefile",
+        "evals/files/lean/config.in",
+        "evals/files/lean/tests/Makefile"
+      ],
+      "expectations": [
+        "The rule 'make test-one T=<name>' is kept",
+        "The rule about `build/config.yaml` being regenerated by `make gen` is kept",
+        "The rule about the 32-bit target is kept",
+        "The response does not propose pointing to a docs/ directory, CONTRIBUTING.md, or any file that does not exist in the fixture",
+        "If a rewritten CLAUDE.md is produced, at most 2 of its lines differ in wording from the original",
+        "The response reports the before and after line counts, or states that no change is needed",
+        "The response explains, for each kept rule, why it passes the keep test (a per-block verdict, not a blanket 'looks fine')"
+      ]
+    }
+  ]
+}

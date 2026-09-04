@@ -12,20 +12,23 @@ const report = (file, line, message) =>
 const read = (file) => readFileSync(file, 'utf8');
 
 // Prose covered by the style and link checks. CLAUDE.md is gitignored and
-// LICENSE is fixed legal text, so neither is in scope.
+// LICENSE is fixed legal text, so neither is in scope; the eval fixtures
+// under skills/*/evals/ are deliberately bad CLAUDE.md files, not prose.
 const proseFiles = ['README.md', 'CHANGELOG.md'];
 const collectMarkdown = (dir) => {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const filePath = path.join(dir, entry.name);
-    if (entry.isDirectory()) collectMarkdown(filePath);
-    else if (entry.name.endsWith('.md')) proseFiles.push(filePath);
+    if (entry.isDirectory()) {
+      if (entry.name !== 'evals') collectMarkdown(filePath);
+    } else if (entry.name.endsWith('.md')) proseFiles.push(filePath);
   }
 };
 collectMarkdown('skills');
 
-// 1. Each SKILL.md: frontmatter with name equal to the folder and a
-// description under 300 characters (the runtime reads only those two
-// fields), and the file well under the 200-line ceiling it preaches.
+// 1. Each SKILL.md: frontmatter with name equal to the folder, a
+// description under 300 characters, description plus when_to_use under
+// 600 (the runtime truncates the pair at 1,536 in the skill listing), and
+// the file well under the 200-line ceiling it preaches.
 for (const skillName of readdirSync('skills')) {
   const dir = path.join('skills', skillName);
   if (!statSync(dir).isDirectory()) continue;
@@ -52,6 +55,10 @@ for (const skillName of readdirSync('skills')) {
     report(file, 3, 'description missing from the frontmatter');
   } else if ([...fields.description].length > 300) {
     report(file, 3, `description is ${[...fields.description].length} characters, maximum 300`);
+  }
+  const listing = [...(fields.description ?? '') + (fields.when_to_use ?? '')].length;
+  if (listing > 600) {
+    report(file, 3, `description plus when_to_use is ${listing} characters, maximum 600`);
   }
   const lineCount = text.split(/\r?\n/).length;
   if (lineCount >= 200) {
@@ -127,7 +134,64 @@ for (const file of proseFiles) {
   }
 }
 
-// 4. The plugin version tracks the latest released CHANGELOG version, the
+// 4. A bare @path outside code in the skill's own markdown would attach
+// that file when the skill loads, the exact trap the skill warns about.
+// The prose files under skills/ are the only ones a skill loader reads.
+const BARE_IMPORT = /(^|[^`\w])@(~?\/?[\w.-]+\/[\w./-]*|[\w-]+\.md)/;
+for (const file of proseFiles.filter((f) => f.startsWith('skills'))) {
+  const lines = read(file).split(/\r?\n/);
+  let inFence = false;
+  for (let i = 0; i < lines.length; i++) {
+    if (/^\s*(```|~~~)/.test(lines[i])) {
+      inFence = !inFence;
+      continue;
+    }
+    if (inFence) continue;
+    const cleaned = lines[i].replace(/`[^`]*`/g, '');
+    if (BARE_IMPORT.test(cleaned)) {
+      report(file, i + 1, 'bare @path outside code, it would be attached when the skill loads');
+    }
+  }
+}
+
+// 5. Each skill's evals/evals.json, when present, has the shape the
+// skill-creator plugin reads and names only fixture files that exist.
+for (const skillName of readdirSync('skills')) {
+  const file = path.join('skills', skillName, 'evals', 'evals.json');
+  if (!existsSync(file)) continue;
+  let data;
+  try {
+    data = JSON.parse(read(file));
+  } catch (e) {
+    report(file, null, `not valid JSON: ${e.message}`);
+    continue;
+  }
+  if (data.skill_name !== skillName) {
+    report(file, null, `skill_name "${data.skill_name}" differs from the folder "${skillName}"`);
+  }
+  if (!Array.isArray(data.evals) || data.evals.length === 0) {
+    report(file, null, 'evals must be a non-empty array');
+    continue;
+  }
+  const ids = new Set();
+  for (const ev of data.evals) {
+    if (ids.has(ev.id)) report(file, null, `duplicate eval id ${ev.id}`);
+    ids.add(ev.id);
+    for (const key of ['prompt', 'expected_output']) {
+      if (typeof ev[key] !== 'string' || !ev[key].trim()) report(file, null, `eval ${ev.id}: ${key} missing`);
+    }
+    if (!Array.isArray(ev.expectations) || ev.expectations.length === 0) {
+      report(file, null, `eval ${ev.id}: expectations missing`);
+    }
+    for (const fixture of ev.files ?? []) {
+      if (!existsSync(path.join('skills', skillName, fixture))) {
+        report(file, null, `eval ${ev.id}: fixture ${fixture} does not exist`);
+      }
+    }
+  }
+}
+
+// 6. The plugin version tracks the latest released CHANGELOG version, the
 // agreement that manual releases let drift first.
 const manifest = JSON.parse(read('.claude-plugin/plugin.json'));
 const released = read('CHANGELOG.md').match(/^## \[(\d+\.\d+\.\d+)\]/m);
@@ -146,4 +210,4 @@ if (errors.length > 0) {
   for (const e of errors) console.error(`  ${e}`);
   process.exit(1);
 }
-console.log(`Invariants checked across ${proseFiles.length} files: frontmatter, links, style, version.`);
+console.log(`Invariants checked across ${proseFiles.length} files: frontmatter, links, style, imports, evals, version.`);

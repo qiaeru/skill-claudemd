@@ -1,0 +1,8 @@
+openapi: 3.1.0
+info:
+  title: users-api
+  version: 2.4.1
+paths:
+  /v1/users:
+    post:
+      summary: Create a user

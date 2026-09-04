@@ -21,3 +21,8 @@ $RECYCLE.BIN/
 *.bak
 *.tmp
 *.orig
+
+# Skill eval run artifacts (skill-creator workspace, plugin eval results).
+# The eval cases themselves, skills/*/evals/, are versioned.
+skills/*-workspace/
+**/evals/results/
