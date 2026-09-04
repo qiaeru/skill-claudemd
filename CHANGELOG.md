@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- The two fixture CLAUDE.md files were caught by the root `.gitignore` rule and missing from the 1.4.0 tag, so the eval cases could not run from a clone; they are now tracked, and the validator refuses a gitignored fixture.
+- The bloated fixture's `vitest` range moved past a Dependabot advisory (a fixture dependency is never installed, but the alert was noise on the repo).
+
 ## [1.4.0] - 2026-09-04
 
 ### Added

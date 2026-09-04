@@ -1,6 +1,7 @@
 // Checks the repo invariants that break silently, complementing the
 // "plugin validate" step run by the workflow. Runs locally with
 // "node .github/scripts/validate.mjs" from the repo root.
+import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
@@ -155,7 +156,18 @@ for (const file of proseFiles.filter((f) => f.startsWith('skills'))) {
 }
 
 // 5. Each skill's evals/evals.json, when present, has the shape the
-// skill-creator plugin reads and names only fixture files that exist.
+// skill-creator plugin reads and names only fixture files that exist and
+// are not gitignored: the root .gitignore ignores every CLAUDE.md, so a
+// fixture CLAUDE.md exists locally yet never reaches the remote unless a
+// negation keeps it tracked.
+const isIgnored = (file) => {
+  try {
+    execFileSync('git', ['check-ignore', '-q', file], { stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
+  }
+};
 for (const skillName of readdirSync('skills')) {
   const file = path.join('skills', skillName, 'evals', 'evals.json');
   if (!existsSync(file)) continue;
@@ -184,8 +196,11 @@ for (const skillName of readdirSync('skills')) {
       report(file, null, `eval ${ev.id}: expectations missing`);
     }
     for (const fixture of ev.files ?? []) {
-      if (!existsSync(path.join('skills', skillName, fixture))) {
+      const fixturePath = path.join('skills', skillName, fixture);
+      if (!existsSync(fixturePath)) {
         report(file, null, `eval ${ev.id}: fixture ${fixture} does not exist`);
+      } else if (isIgnored(fixturePath)) {
+        report(file, null, `eval ${ev.id}: fixture ${fixture} is gitignored, it will be missing from the remote`);
       }
     }
   }

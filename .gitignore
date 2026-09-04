@@ -1,5 +1,7 @@
-# Claude Code working files, local to the dev machine.
+# Claude Code working files, local to the dev machine. The eval fixtures are
+# CLAUDE.md files too, and must stay tracked.
 CLAUDE.md
+!skills/*/evals/files/*/CLAUDE.md
 .claude/
 
 # Operating systems.
