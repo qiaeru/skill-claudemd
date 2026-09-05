@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-09-04
+
 ### Added
 
 - The report lists the gaps noticed during the inventory (an env var read in the code, a non-obvious script, a generated directory absent from CLAUDE.md) as suggestions, never as unrequested additions.
