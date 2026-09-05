@@ -21,6 +21,7 @@ These fail the keep test. Removing them changes nothing, because Claude either a
 - **Anything Claude can learn by reading the code.** Directory listings, "this project uses React", lists of dependencies already in the manifest.
 - **Standard language and framework conventions.** "Use meaningful variable names", "follow PEP 8", "components go in PascalCase". Claude knows the ecosystem defaults.
 - **Self-evident advice.** "Write clean code", "add tests", "handle errors gracefully", "keep functions small". Noise that dilutes the real rules.
+- **Leftover boilerplate.** The `/init` opening line ("This file provides guidance to Claude Code..."), template placeholders never filled in (`<Project Name>`), empty sections, and TODO items nobody completed. They carry no instruction and signal that the rest was not curated either.
 - **Information that changes frequently.** Current version numbers, a sprint's task list, the name of whoever owns a module this month. It goes stale and starts lying.
 - **File-by-file narration of the codebase.** A paragraph per file describing what it does. Claude reads the file when it needs it.
 - **Learnings auto memory already records.** Notes that read like something Claude discovered rather than an instruction someone wrote ("turns out the flaky test is the Redis timeout", "the build needs `--legacy-peer-deps`") belong in auto memory (`MEMORY.md`, maintained by Claude itself). A standing instruction the team wants enforced stays in CLAUDE.md; a discovered fact duplicating the other memory system goes.
