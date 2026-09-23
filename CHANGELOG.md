@@ -25,6 +25,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - The skill said Claude Code never reads `AGENTS.md`, untrue since 2.1.277.
 - A zero-exception rule was cut from CLAUDE.md even when its replacement hook could not be written; the line now goes only once the hook exists.
+- The lint hook example now lints only the edited file: `npm run lint:fix -- <file>` still linted the whole tree.
 
 ## [1.5.0] - 2026-09-04
 

@@ -108,14 +108,14 @@ A rule that must hold every single time, written as prose and dressed up with em
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
-        "hooks": [{ "type": "command", "command": "jq -r '.tool_input.file_path' | xargs -r npm run lint:fix --" }]
+        "hooks": [{ "type": "command", "command": "jq -r '.tool_input.file_path' | xargs -r npx eslint --fix" }]
       }
     ]
   }
 }
 ```
 
-The hook receives the tool call as JSON on stdin, so it lints only the edited file instead of the whole tree. The command needs `jq` and a POSIX shell; on Windows, Claude Code runs hooks through Git Bash when it is installed, otherwise point the command at a PowerShell script that reads the same JSON from stdin. The linter now runs deterministically after every edit, whether or not Claude remembers, and CLAUDE.md is one line shorter and one IMPORTANT quieter.
+The hook receives the tool call as JSON on stdin, so it lints only the edited file instead of the whole tree. It calls ESLint directly on purpose: `npm run lint:fix -- <file>` would append the file to a script like `eslint . --fix` and lint the whole tree anyway. The command needs `jq` and a POSIX shell; on Windows, Claude Code runs hooks through Git Bash when it is installed, otherwise point the command at a PowerShell script that reads the same JSON from stdin. The linter now runs deterministically after every edit, whether or not Claude remembers, and CLAUDE.md is one line shorter and one IMPORTANT quieter.
 
 ## The pattern across all four
 
