@@ -47,9 +47,11 @@ The skill runs every block of a `CLAUDE.md` through two tests, in order:
 1. **Keep or cut.** "Would removing this cause Claude to make a mistake?" If not, it goes. The skill drops self-evident advice, standard conventions, and anything Claude already does correctly.
 2. **Copy or reference.** For what survives: "Is this already in the code or the docs?" If so, the skill replaces the copy with a pointer to the source, so there is one source of truth and no launch-time token cost.
 
-It then resolves contradictions to a single source of truth, verifies that every command and path it keeps still works, restructures the survivors with headers and concrete phrasing while leaving the wording of what it keeps alone, moves misplaced content out to skills, path-scoped rules, nested CLAUDE.md files, or hooks (for rules that must run every time without exception), shows the block-by-block classification and the diff before writing anything, and reports the before and after line and character counts along with any gaps it noticed while reading the code (as suggestions, never as unrequested additions).
+It then resolves contradictions to a single source of truth, verifies that every command and path it keeps still exists (by reading the manifests and files, never by running a command), restructures the survivors with headers and concrete phrasing while leaving the wording of what it keeps alone, moves misplaced content out to skills, path-scoped rules, nested CLAUDE.md files, or hooks (for rules that must run every time without exception), shows the block-by-block classification and the diff before writing anything, and reports the before and after line and character counts along with any gaps it noticed while reading the code (as suggestions, never as unrequested additions).
 
 The key distinction the skill teaches is that not every "reference" saves tokens. A prose pointer loads on demand and costs one line; an `@path` import loads the whole file at launch and saves nothing. The [referencing-techniques](skills/optimizing-claude-md/references/referencing-techniques.md) reference covers all five mechanisms (prose pointer, import, path-scoped rule, nested CLAUDE.md, skill), plus hooks, and when to use each.
+
+It also handles `AGENTS.md`. Claude Code 2.1.277 and later reads it natively, but by default only when no `CLAUDE.md` or `CLAUDE.local.md` exists, so the skill optimizes a loaded `AGENTS.md` like a `CLAUDE.md` and fixes the setups that silently hide it: a `CLAUDE.md` next to it that does not import it, a sentence asking Claude to read it, or a new `CLAUDE.local.md` created in a repo that relied on it.
 
 ## Installation
 
@@ -78,7 +80,7 @@ When you change the skill in this repo, re-copy the `skills/optimizing-claude-md
 
 Once installed, ask Claude to "optimize the CLAUDE.md" (or trim, audit, shrink, clean up, improve it). Claude recognizes the request from the skill's `description` and runs the procedure: it reads the current `CLAUDE.md`, inventories the project's docs, then cuts, references, de-duplicates, and restructures, ending with a before and after line count.
 
-You can also invoke it explicitly by name for a full pass (`/claudemd:optimizing-claude-md` when installed as a plugin, `/optimizing-claude-md` when copied manually), or point it at a specific file (`CLAUDE.local.md`, a nested `CLAUDE.md`, or an `AGENTS.md` you want wired up by import).
+You can also invoke it explicitly by name for a full pass (`/claudemd:optimizing-claude-md` when installed as a plugin, `/optimizing-claude-md` when copied manually), or point it at a specific file (`CLAUDE.local.md`, a nested `CLAUDE.md`, or an `AGENTS.md`).
 
 If the project has no `CLAUDE.md` yet, the skill suggests running `/init` first to generate a starting point from the codebase, then optimizes the result.
 

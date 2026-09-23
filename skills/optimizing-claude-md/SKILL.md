@@ -1,7 +1,8 @@
 ---
 name: optimizing-claude-md
 description: Optimize a project's CLAUDE.md to be short, specific, and free of duplication. Use when asked to optimize, trim, audit, or improve a CLAUDE.md or AGENTS.md. Scans the existing docs and replaces derivable or duplicated content with on-demand references rather than rewriting it in CLAUDE.md.
-when_to_use: Also when asked to shrink, slim down, clean up, prune, or review a CLAUDE.md, CLAUDE.local.md, a nested CLAUDE.md, or .claude/rules/, and when /doctor already proposed trims and the user wants a deeper pass.
+when_to_use: Also when asked to shrink, slim down, clean up, prune, or review a CLAUDE.md, CLAUDE.local.md, AGENTS.md, a nested CLAUDE.md, .claude/rules/, or the project's agent or memory instructions, and when /doctor already proposed trims and the user wants a deeper pass.
+license: MIT
 ---
 
 # Optimizing CLAUDE.md
@@ -21,7 +22,7 @@ Apply when the user asks to optimize, trim, audit, shrink, clean up, or improve 
 - Project, shared with the team: `./CLAUDE.md` or `./.claude/CLAUDE.md`; when both exist, both load
 - Local, private to one checkout: `./CLAUDE.local.md` (gitignored)
 - Rules: `.claude/rules/*.md` (project) and `~/.claude/rules/*.md` (user). A rule without a `paths:` field loads every session, same as CLAUDE.md, so it gets the same treatment.
-- `AGENTS.md`: Claude reads `CLAUDE.md`, not `AGENTS.md`. If the repo already uses `AGENTS.md`, do not duplicate it. See the import pattern in [references/referencing-techniques.md](references/referencing-techniques.md).
+- `AGENTS.md` and `.claude/AGENTS.md`: Claude Code 2.1.277 and later reads them natively, but by default only when no `CLAUDE.md`, `.claude/CLAUDE.md`, or `CLAUDE.local.md` exists in the working directory or above it; otherwise only a `CLAUDE.md` import brings them in, and a sentence asking Claude to read `AGENTS.md` does not. An `AGENTS.md` that loads costs the same as a CLAUDE.md, so it gets the same treatment. Never copy it into CLAUDE.md. The load rules and the wiring pitfalls are in [references/referencing-techniques.md](references/referencing-techniques.md).
 
 Auto memory is a separate system: notes Claude writes for itself in `~/.claude/projects/<project>/memory/MEMORY.md`, loaded each session up to 200 lines or 25KB. Do not optimize it with this skill; it has its own size cap and Claude maintains it. It matters here as a routing target: content in CLAUDE.md that reads like a discovered learning (a build command Claude figured out, a debugging insight) belongs to auto memory, not to hand-written instructions.
 
@@ -36,15 +37,15 @@ Run every block of the file through two questions, in order.
 
 ## Procedure
 
-1. **Read every memory file in scope.** Load the target CLAUDE.md and any others in the hierarchy that apply (parent directories, nested CLAUDE.md, `.claude/rules/`). When working interactively, suggest `/context`: its **Memory files** list shows what actually loaded in the session, which confirms the scope. Record the line count and the character count so you can report the reduction; lines alone understate a file of long lines.
-2. **Inventory the project's documentation.** Scan `README`, `docs/`, `CONTRIBUTING`, package manifests, ADRs, existing skills under `.claude/skills/`, and any rules. Build a short map of what is documented where. This map is what lets you replace duplication with references rather than guesses.
+1. **Read every memory file in scope.** Load the target CLAUDE.md and any others in the hierarchy that apply (parent directories, nested CLAUDE.md, `.claude/rules/`, `AGENTS.md`). When working interactively, suggest `/context`: its **Memory files** list shows what actually loaded in the session, which confirms the scope. Record the line count and the character count so you can report the reduction; lines alone understate a file of long lines.
+2. **Inventory the project's documentation.** Scan `README`, `docs/`, `CONTRIBUTING`, package manifests, ADRs, existing skills under `.claude/skills/`, and any rules. Build a short map of what is documented where. This map is what lets you replace duplication with references rather than guesses. Also search the code for the environment variables it reads (`process.env`, `os.environ`, `getenv`) and the scripts it defines: those CLAUDE.md does not mention feed the gap list in step 9. In a large repo, delegate the scan to a subagent and keep only the map, so the file dumps stay out of the working context.
 3. **Classify every block** as keep, cut, or reference using the include/exclude table in [references/include-exclude.md](references/include-exclude.md).
 4. **Pick a mechanism for each "reference" block.** Default to a prose pointer, because it loads on demand and costs nothing at launch. Reserve `@import`, path-scoped rules, and skills for the cases described in [references/referencing-techniques.md](references/referencing-techniques.md).
-5. **Detect contradictions, duplicates, and stale survivors.** Check for instructions that conflict within the file, across nested CLAUDE.md files and rules, or against the docs you are about to point to. Resolve each to a single source of truth; when CLAUDE.md and a doc disagree, keep the correct one and delete the other. Files at the same level (`./CLAUDE.md`, `./.claude/CLAUDE.md`, `CLAUDE.local.md`) are concatenated at launch, so a rule repeated across them is paid twice: keep one copy. Then verify that the content you are keeping is still current: every command you keep still runs, every path or file it names still exists. A stale rule misleads worse than a missing one, so fix it or cut it.
+5. **Detect contradictions, duplicates, and stale survivors.** Check for instructions that conflict within the file, across nested CLAUDE.md files and rules, or against the docs you are about to point to. Resolve each to a single source of truth; when CLAUDE.md and a doc disagree, keep the correct one and delete the other. Files at the same level (`./CLAUDE.md`, `./.claude/CLAUDE.md`, `CLAUDE.local.md`) are concatenated at launch, so a rule repeated across them is paid twice: keep one copy. Then verify that the content you are keeping is still current: every command you keep is still defined (the manifest script, the Makefile target, the wrapper file), every path it names still exists. Check by reading, never by running: a kept command can deploy, migrate, or wipe data. A stale rule misleads worse than a missing one, so fix it or cut it.
 6. **Restructure the survivors, with a minimal diff.** Markdown headers and bullets, concrete and verifiable phrasing ("Use 2-space indentation", not "format properly"), related rules grouped. Leave the wording and order of a line that passed both tests alone; rewrite only what is vague. The diff should show the substantive changes, not a rephrasing of everything.
-7. **Relocate misplaced content.** Move multi-step procedures and rules that only matter for one part of the codebase out of CLAUDE.md into a skill, a path-scoped rule, or a nested CLAUDE.md, so they load only when relevant. Turn rules that must run at a fixed point with zero exceptions ("run the linter after every edit", "never write to `migrations/`") into hooks: CLAUDE.md is advisory, hooks are deterministic. Move personal or machine-specific content found in the shared file (sandbox URLs, local paths, individual preferences) to `CLAUDE.local.md`.
-8. **Propose, then write.** Before touching any file, show the classification block by block (kept, cut, pointed to where, moved to what) and the resulting diff. When working interactively, wait for confirmation. Only then write the new CLAUDE.md and create the files it now points to or relies on.
-9. **Report.** Show the before and after line and character counts, summarize what was cut, referenced, or moved, and confirm that nothing load-bearing was lost. Add the gaps noticed during the inventory (a required env var read in the code, a non-obvious script, a generated directory, none of them mentioned in CLAUDE.md) as suggestions for the user, never as unrequested additions. When working interactively, suggest `/context` before and after: it shows the actual token footprint of the memory files at launch, which is the unit that matters.
+7. **Relocate misplaced content.** Move multi-step procedures and rules that only matter for one part of the codebase out of CLAUDE.md into a skill, a path-scoped rule, or a nested CLAUDE.md, so they load only when relevant. Turn rules that must run at a fixed point with zero exceptions ("run the linter after every edit", "never write to `migrations/`") into hooks: CLAUDE.md is advisory, hooks are deterministic. Cut the CLAUDE.md line only once the hook is written; if writing it fails or is declined, keep the rule and say so. Move personal or machine-specific content found in the shared file (sandbox URLs, local paths, individual preferences) to `CLAUDE.local.md`. In a repo whose instructions live in `AGENTS.md` alone, creating `CLAUDE.local.md` stops Claude from reading `AGENTS.md` for that user: start the new file with the line `@AGENTS.md`.
+8. **Propose, then write.** Before touching any file, show the classification block by block (kept, cut, pointed to where, moved to what) and the resulting diff. When working interactively, wait for confirmation, unless the user already told you to apply the changes without a review step; then show both and write in the same turn. Only then write the new CLAUDE.md and create the files it now points to or relies on.
+9. **Report.** Show four numbers, lines before and after and characters before and after, measured on the files rather than estimated, summarize what was cut, referenced, or moved, and confirm that nothing load-bearing was lost. Add the gaps noticed during the inventory (a required env var read in the code, a non-obvious script, a generated directory, none of them mentioned in CLAUDE.md) as suggestions for the user, never as unrequested additions. When working interactively, suggest `/context` before and after: it shows the actual token footprint of the memory files at launch, which is the unit that matters.
 
 ## Reference, don't duplicate
 
@@ -53,28 +54,14 @@ This is the core move and the one most often done wrong. There are five mechanis
 | Mechanism | Loaded at launch? | Use for |
 | --- | --- | --- |
 | Prose pointer (default) | No, only its one line | Anything large or only-sometimes-relevant |
-| `@path` import | Yes, the whole file | Small stable files needed every session, wiring up `@AGENTS.md` |
+| `@path` import | Yes, the whole file | Small stable files needed every session, `@AGENTS.md` next to a CLAUDE.md |
 | Path-scoped rule | Only when Claude reads a matching file | Conventions tied to one file type or pattern |
 | Nested CLAUDE.md | Only when Claude reads files in that directory | Conventions covering one whole subtree |
 | Skill | Body on demand, description always | Repeatable multi-step workflows |
 
-The pivotal fact: `@docs/foo.md` expands the whole file into context at launch, exactly as if you had pasted it, so an import does **not** save tokens. A prose pointer ("Architecture overview: `docs/architecture.md`") is *not* auto-loaded; Claude reads the target on demand. The second nuance: a skill's description is always in context, only its body loads on demand, so moving a block to a skill costs about the same at launch as a prose pointer (zero when the skill lives in a subdirectory's own `.claude/skills/`, which loads only when Claude works there).
+The pivotal fact: `@docs/foo.md` expands the whole file into context at launch, exactly as if you had pasted it, so an import does **not** save tokens. A prose pointer ("Architecture overview: `docs/architecture.md`") is *not* auto-loaded; Claude reads the target on demand. Write its path in backticks or without the `@`: a bare `@path` outside backticks is still an import. The second nuance: a skill's description is always in context, only its body loads on demand, so moving a block to a skill costs about the same at launch as a prose pointer (zero when the skill lives in a subdirectory's own `.claude/skills/`, which loads only when Claude works there).
 
-The decision tree, the load-time table, and concrete examples are in [references/referencing-techniques.md](references/referencing-techniques.md).
-
-## Keep or cut, quick reference
-
-| ✅ Keep | ❌ Cut or reference |
-| --- | --- |
-| Bash commands Claude cannot guess | Anything Claude can learn by reading the code |
-| Code style that differs from the language default | Standard conventions Claude already knows |
-| Test runner and how to run a single test | Detailed API docs (point to the docs instead) |
-| Repo etiquette (branch naming, PR rules) | Information that changes frequently |
-| Architectural decisions specific to this project | Long explanations or tutorials |
-| Environment quirks (required env vars, setup gotchas) | File-by-file descriptions of the codebase |
-| Non-obvious behaviors and common gotchas | Self-evident advice ("write clean code") |
-
-The full table with borderline cases is in [references/include-exclude.md](references/include-exclude.md).
+The decision tree, the detail of each mechanism, hooks, and the `AGENTS.md` wiring are in [references/referencing-techniques.md](references/referencing-techniques.md).
 
 ## Sizing and structure
 
@@ -88,11 +75,9 @@ The full table with borderline cases is in [references/include-exclude.md](refer
 
 - Don't cut a rule just because it is long. Apply the keep test, not a word count. A non-obvious gotcha earns its lines.
 - Don't rewrite what you keep. A line that passed both tests keeps its wording unless it is vague; churn hides the real changes in the diff.
-- Don't `@import` a large doc to "save space". Imports load in full at launch; use a prose pointer, with the path in backticks or without the `@`, since a bare `@path` outside backticks is still an import.
 - Don't invent or assume documentation. Only point to files that exist, and verify each pointer resolves before writing it.
 - Don't keep in CLAUDE.md what auto memory already records on its own; route discovered learnings there.
 - Don't move team-shared project rules into `CLAUDE.local.md`; that hides them from the team. Local is for personal, machine-specific notes only.
-- Don't leave contradictions standing. If two instructions disagree, Claude picks one arbitrarily; pick for it.
 - Don't write before proposing. Show the block-by-block classification and the diff first.
 
 ## Examples

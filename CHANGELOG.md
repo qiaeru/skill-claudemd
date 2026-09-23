@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- `AGENTS.md` support for the native reading Claude Code 2.1.277 ships: a loaded `AGENTS.md` is optimized like a CLAUDE.md, and the setups that hide or double-load it are checked (a CLAUDE.md that does not import it, a sentence pointing to it, a `SessionStart` hook printing it, the **Project instructions** setting).
+- A `CLAUDE.local.md` created in a repo with only `AGENTS.md` starts with the `@AGENTS.md` import, since its existence alone stops `AGENTS.md` from loading.
+- The inventory searches the code for the environment variables and scripts it uses, feeding the report's gap list; in a large repo the scan can go to a subagent.
+- A `license: MIT` frontmatter field, so a manually copied skill folder carries its license.
+
+### Changed
+
+- When the user already asked to apply the changes without review, the skill shows the classification and the diff and writes in the same turn instead of waiting for a confirmation.
+- Kept commands are verified by reading the manifests and files, never by running them.
+- The report gives measured line and character counts, before and after.
+- `when_to_use` also names `AGENTS.md` and the project's agent or memory instructions.
+- SKILL.md no longer repeats its reference files: the quick keep-or-cut table, the load-time table, and two Don't items that restated the procedure are gone.
+
+### Fixed
+
+- The skill said Claude Code never reads `AGENTS.md`, untrue since 2.1.277.
+- A zero-exception rule was cut from CLAUDE.md even when its replacement hook could not be written; the line now goes only once the hook exists.
+
 ## [1.5.0] - 2026-09-04
 
 ### Added

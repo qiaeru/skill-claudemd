@@ -33,6 +33,7 @@ These pass the keep test (Claude does need the information) but fail the copy te
 - **Detailed API or feature documentation.** Point to `docs/` instead of pasting endpoint signatures.
 - **Long workflow guides.** A multi-step release or deploy runbook belongs in a doc or a skill; CLAUDE.md names where it is.
 - **Contribution rules already in `CONTRIBUTING.md`.** Point to it; do not restate it and let the two drift apart.
+- **Instructions already in `AGENTS.md`.** Import it or let Claude Code read it natively, never restate it; the wiring is in the AGENTS.md section of [referencing-techniques.md](referencing-techniques.md).
 - **The README's project overview.** A pointer, or a single `@README.md` import only if it is short and you genuinely want it every session.
 - **Schema, config, or generated reference.** Name the file; Claude opens it on demand.
 
