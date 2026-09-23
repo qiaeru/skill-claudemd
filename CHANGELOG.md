@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-09-23
+
 ### Added
 
 - `AGENTS.md` support for the native reading Claude Code 2.1.277 ships: a loaded `AGENTS.md` is optimized like a CLAUDE.md, and the setups that hide or double-load it are checked (a CLAUDE.md that does not import it, a sentence pointing to it, a `SessionStart` hook printing it, the **Project instructions** setting).
