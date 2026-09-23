@@ -1,0 +1,10 @@
+{
+  "name": "csvkit-lite",
+  "version": "0.3.0",
+  "type": "module",
+  "bin": { "csvkit-lite": "src/cli.js" },
+  "scripts": {
+    "test": "node --test",
+    "bundle": "node scripts/bundle.js"
+  }
+}

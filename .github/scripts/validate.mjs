@@ -13,15 +13,14 @@ const report = (file, line, message) =>
 const read = (file) => readFileSync(file, 'utf8');
 
 // Prose covered by the style and link checks. CLAUDE.md is gitignored and
-// LICENSE is fixed legal text, so neither is in scope; the eval fixtures
-// under skills/*/evals/ are deliberately bad CLAUDE.md files, not prose.
+// LICENSE is fixed legal text, so neither is in scope; the eval suite
+// under evals/ holds deliberately bad CLAUDE.md fixtures, not prose.
 const proseFiles = ['README.md', 'CHANGELOG.md'];
 const collectMarkdown = (dir) => {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const filePath = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      if (entry.name !== 'evals') collectMarkdown(filePath);
-    } else if (entry.name.endsWith('.md')) proseFiles.push(filePath);
+    if (entry.isDirectory()) collectMarkdown(filePath);
+    else if (entry.name.endsWith('.md')) proseFiles.push(filePath);
   }
 };
 collectMarkdown('skills');
@@ -155,53 +154,100 @@ for (const file of proseFiles.filter((f) => f.startsWith('skills'))) {
   }
 }
 
-// 5. Each skill's evals/evals.json, when present, has the shape the
-// skill-creator plugin reads and names only fixture files that exist and
-// are not gitignored: the root .gitignore ignores every CLAUDE.md, so a
-// fixture CLAUDE.md exists locally yet never reaches the remote unless a
-// negation keeps it tracked.
+// 5. The claude plugin eval suite under evals/: each case has a prompt, a
+// scaffold script that copies an existing fixture, and graders of a known
+// type whose regexes compile, since a broken pattern only shows up as a
+// silent zero after a paid run. An expected_outcome quoting a fixture's
+// original line count must match it, and no fixture file may be
+// gitignored: the root .gitignore ignores every CLAUDE.md, so a fixture
+// exists locally yet never reaches the remote unless a negation keeps it.
+const GRADER_TYPES = new Set(['regex', 'tool_used', 'tool_order', 'file_exists', 'llm', 'baseline']);
+const frontmatter = (text) => {
+  const block = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
+  if (!block) return null;
+  const fields = {};
+  for (const line of block[1].split(/\r?\n/)) {
+    const m = line.match(/^([\w-]+)\s*:\s*(.*)$/);
+    if (!m) continue;
+    const value = m[2].trim();
+    fields[m[1]] = /^'.*'$/.test(value) ? value.slice(1, -1).replace(/''/g, "'") : value;
+  }
+  return { fields, body: block[2].trim() };
+};
 const isIgnored = (file) => {
   try {
-    execFileSync('git', ['check-ignore', '-q', file], { stdio: 'ignore' });
+    execFileSync('git', ['check-ignore', '-q', '--no-index', file], { stdio: 'ignore' });
     return true;
   } catch {
     return false;
   }
 };
-for (const skillName of readdirSync('skills')) {
-  const file = path.join('skills', skillName, 'evals', 'evals.json');
-  if (!existsSync(file)) continue;
-  let data;
-  try {
-    data = JSON.parse(read(file));
-  } catch (e) {
-    report(file, null, `not valid JSON: ${e.message}`);
-    continue;
-  }
-  if (data.skill_name !== skillName) {
-    report(file, null, `skill_name "${data.skill_name}" differs from the folder "${skillName}"`);
-  }
-  if (!Array.isArray(data.evals) || data.evals.length === 0) {
-    report(file, null, 'evals must be a non-empty array');
-    continue;
-  }
-  const ids = new Set();
-  for (const ev of data.evals) {
-    if (ids.has(ev.id)) report(file, null, `duplicate eval id ${ev.id}`);
-    ids.add(ev.id);
-    for (const key of ['prompt', 'expected_output']) {
-      if (typeof ev[key] !== 'string' || !ev[key].trim()) report(file, null, `eval ${ev.id}: ${key} missing`);
-    }
-    if (!Array.isArray(ev.expectations) || ev.expectations.length === 0) {
-      report(file, null, `eval ${ev.id}: expectations missing`);
-    }
-    for (const fixture of ev.files ?? []) {
-      const fixturePath = path.join('skills', skillName, fixture);
-      if (!existsSync(fixturePath)) {
-        report(file, null, `eval ${ev.id}: fixture ${fixture} does not exist`);
-      } else if (isIgnored(fixturePath)) {
-        report(file, null, `eval ${ev.id}: fixture ${fixture} is gitignored, it will be missing from the remote`);
+const walk = (dir) =>
+  readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const p = path.join(dir, entry.name);
+    return entry.isDirectory() ? walk(p) : [p];
+  });
+const EVALS = 'evals';
+const FIXTURES = path.join(EVALS, 'fixtures');
+if (!existsSync(EVALS)) {
+  report(EVALS, null, 'eval suite missing');
+} else {
+  const cases = readdirSync(EVALS, { withFileTypes: true })
+    .filter((e) => e.isDirectory() && existsSync(path.join(EVALS, e.name, 'prompt.md')))
+    .map((e) => path.join(EVALS, e.name));
+  if (cases.length === 0) report(EVALS, null, 'no eval case found');
+  for (const dir of cases) {
+    const prompt = frontmatter(read(path.join(dir, 'prompt.md')));
+    if (!prompt || !prompt.body) report(dir, null, 'prompt.md needs frontmatter and a prompt body');
+    let fixture = null;
+    const caseFile = path.join(dir, 'case.yaml');
+    if (existsSync(caseFile)) {
+      const caseText = read(caseFile);
+      if (!/^schema_version:\s*"1\.1"/m.test(caseText)) report(caseFile, null, 'schema_version "1.1" missing');
+      const script = caseText.match(/scaffold_script:\s*(\S+)/);
+      if (script) {
+        const scriptPath = path.join(dir, script[1]);
+        if (!existsSync(scriptPath)) {
+          report(caseFile, null, `scaffold script ${script[1]} missing`);
+        } else {
+          const name = read(scriptPath).match(/fixtures\/([\w-]+)/);
+          fixture = name && path.join(FIXTURES, name[1]);
+          if (!fixture || !existsSync(fixture)) report(scriptPath, null, 'copies no existing fixture under evals/fixtures/');
+        }
       }
+    }
+    const quoted = prompt?.fields.expected_outcome?.match(/original (\d+) lines/);
+    if (quoted && fixture) {
+      const memory = ['CLAUDE.md', 'AGENTS.md'].map((f) => path.join(fixture, f)).find(existsSync);
+      const actual = memory && read(memory).replace(/\r?\n$/, '').split(/\r?\n/).length;
+      if (actual !== Number(quoted[1])) {
+        report(path.join(dir, 'prompt.md'), null, `expected_outcome says ${quoted[1]} lines, the fixture has ${actual}`);
+      }
+    }
+    const graderDir = path.join(dir, 'graders');
+    const graders = existsSync(graderDir) ? readdirSync(graderDir).filter((f) => f.endsWith('.md')) : [];
+    if (graders.length === 0) report(dir, null, 'no grader under graders/');
+    for (const g of graders) {
+      const file = path.join(graderDir, g);
+      const grader = frontmatter(read(file));
+      if (!grader || !GRADER_TYPES.has(grader.fields.type)) {
+        report(file, null, `unknown grader type "${grader?.fields.type}"`);
+        continue;
+      }
+      for (const key of ['pattern', 'input_match']) {
+        if (grader.fields[key] === undefined) continue;
+        try {
+          new RegExp(grader.fields[key], grader.fields.flags ?? '');
+        } catch (e) {
+          report(file, null, `${key} is not a valid JavaScript regex: ${e.message}`);
+        }
+      }
+      if (grader.fields.type === 'llm' && !grader.body) report(file, null, 'llm grader without criteria');
+    }
+  }
+  if (existsSync(FIXTURES)) {
+    for (const file of walk(FIXTURES)) {
+      if (isIgnored(file)) report(file, null, 'fixture is gitignored, it will be missing from the remote');
     }
   }
 }

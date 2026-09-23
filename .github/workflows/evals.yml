@@ -1,0 +1,45 @@
+# Runs the claude plugin eval suite on demand only: every run is a paid
+# model call, so it never fires on push or on a schedule. Needs an
+# ANTHROPIC_API_KEY repository secret. Both models are pinned so a model
+# rollout is not mistaken for a skill regression, and the cost ceiling
+# stops the run before it overspends. No shell tool is granted, so the
+# runner needs no sandbox backend.
+name: Evals
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Run only the cases with this tag (behavior, trigger, agents-md); leave empty to run them all
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+      - name: Run the eval suite
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TAG: ${{ inputs.tag }}
+        run: >-
+          npx -y @anthropic-ai/claude-code plugin eval . ${TAG:+--tag "$TAG"}
+          --scaffold --allow-tools Edit Write --trust-plugin
+          --json results.json --threshold 0.8
+          --model claude-sonnet-5 --judge-model claude-haiku-4-5
+          --no-publish --max-cost-usd 25
+      - name: Keep the results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: eval-results
+          path: |
+            results.json
+            evals/results/
+          if-no-files-found: ignore

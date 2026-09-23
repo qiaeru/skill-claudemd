@@ -41,6 +41,7 @@ This is a Node.js REST API for managing users and teams, built with Express and 
 
 - Prefer running single tests for speed; do not run the whole suite, it takes 9 minutes.
 - The API tests need a local Redis on port 6379 (`docker compose up redis`).
+- Note to self: my Postgres runs on port 5433 on this laptop, so I set `DATABASE_URL=postgres://localhost:5433/users_dev`.
 
 ## Gotchas
 

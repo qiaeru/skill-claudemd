@@ -20,6 +20,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The report gives measured line and character counts, before and after.
 - `when_to_use` also names `AGENTS.md` and the project's agent or memory instructions.
 - SKILL.md no longer repeats its reference files: the quick keep-or-cut table, the load-time table, and two Don't items that restated the procedure are gone.
+- The eval suite moves to the native `claude plugin eval` format at the plugin root, `evals/`, replacing the skill-creator `evals.json`: every case runs with and without the plugin, most graders are free regex checks, and new cases cover the `AGENTS.md` setups and triggering. A manually started `Evals` workflow runs it on GitHub with pinned models and a cost ceiling.
+- The validator checks the suite's shape and that a line count quoted in a case matches its fixture.
 
 ### Fixed
 

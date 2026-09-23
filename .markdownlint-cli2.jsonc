@@ -2,7 +2,8 @@
 // logical line, so no line-length limit. Emphasis and strong both use
 // asterisks, matching the repo's existing prose. CLAUDE.md is gitignored
 // local notes, excluded so local runs match CI; the eval fixtures are
-// deliberately bloated CLAUDE.md files, not prose to lint.
+// deliberately bloated CLAUDE.md files and the case files are grader
+// definitions, not prose to lint.
 {
   "config": {
     "MD013": false,
@@ -11,5 +12,5 @@
     "MD050": { "style": "asterisk" }
   },
   "globs": ["**/*.md"],
-  "ignores": ["node_modules/**", "CLAUDE.md", "skills/**/evals/**"]
+  "ignores": ["node_modules/**", "CLAUDE.md", "evals/**"]
 }

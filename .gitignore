@@ -1,7 +1,7 @@
 # Claude Code working files, local to the dev machine. The eval fixtures are
 # CLAUDE.md files too, and must stay tracked.
 CLAUDE.md
-!skills/*/evals/files/*/CLAUDE.md
+!evals/fixtures/*/CLAUDE.md
 .claude/
 
 # Operating systems.
@@ -24,7 +24,6 @@ $RECYCLE.BIN/
 *.tmp
 *.orig
 
-# Skill eval run artifacts (skill-creator workspace, plugin eval results).
-# The eval cases themselves, skills/*/evals/, are versioned.
-skills/*-workspace/
+# Eval run artifacts written by claude plugin eval. The eval cases
+# themselves, evals/, are versioned.
 **/evals/results/

@@ -19,6 +19,7 @@ skill-claudemd/
 │   ├── scripts/
 │   │   └── validate.mjs
 │   └── workflows/
+│       ├── evals.yml
 │       └── validate.yml
 ├── .gitattributes
 ├── .gitignore
@@ -26,12 +27,16 @@ skill-claudemd/
 ├── README.md
 ├── CHANGELOG.md
 ├── LICENSE
+├── evals/
+│   ├── <case>/
+│   │   ├── prompt.md
+│   │   ├── case.yaml
+│   │   ├── scaffold.sh
+│   │   └── graders/
+│   └── fixtures/
 └── skills/
     └── optimizing-claude-md/
         ├── SKILL.md
-        ├── evals/
-        │   ├── evals.json
-        │   └── files/
         └── references/
             ├── include-exclude.md
             ├── referencing-techniques.md
@@ -88,7 +93,15 @@ Claude Code's bundled `/doctor` (2.1.206 and later) already proposes a first-pas
 
 ## Testing the skill
 
-The skill ships with eval cases in [skills/optimizing-claude-md/evals/](skills/optimizing-claude-md/evals/): fixture projects under `files/` and, in `evals.json`, the prompts to run against them with the assertions a good optimization must satisfy. The [skill-creator](https://github.com/anthropics/claude-plugins-official/tree/main/plugins/skill-creator) plugin runs them in isolated subagents, with and without the skill, and grades each assertion. Repo invariants (frontmatter, links, style, version, the eval file) are checked by `node .github/scripts/validate.mjs`, which CI runs on every push. The cases are versioned; run results (`skills/*-workspace/`, `evals/results/`) are gitignored. When installing by manual copy, the `evals/` folder can be left out.
+The eval suite lives in [evals/](evals/) at the plugin root, in the format of `claude plugin eval` (Claude Code 2.1.269 and later). Each case is a directory holding the prompt, a scaffold script that copies a fixture project from `evals/fixtures/` into the run's empty workspace, and its graders. Most graders are free regex checks on the files Claude wrote; a few ask a judge model about the reply. Every case also runs without the plugin, so the report shows what the skill adds over the bare model. Cases tagged `trigger` check that the skill fires on the right requests and stays quiet on the others.
+
+Run it from the repository root:
+
+```text
+claude plugin eval . --scaffold --allow-tools Edit Write
+```
+
+Every run is a real model call billed to your account, roughly cases × 3 runs × 2 arms plus the judge calls; add `--tag trigger`, `--runs 1`, or `--ablation none` to keep a check cheap. The `Evals` workflow runs the same suite on GitHub when started by hand, with pinned models and a cost ceiling; it needs an `ANTHROPIC_API_KEY` repository secret. The free checks run on every push: `node .github/scripts/validate.mjs` covers the repo invariants (frontmatter, links, style, version) and the suite's shape (graders, regexes, fixtures). Run results (`evals/results/`) are gitignored.
 
 ## Limits
 
